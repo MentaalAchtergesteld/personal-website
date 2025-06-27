@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	line-height: 1.5;
+}
+
+.bg-black {
+	--background-color: hsl(0, 0%, 10%);
+}
+
+.fg-purple {
+	--foreground-color: hsl(260, 85%, 75%);
+}
+
+body {
+	font-family: "IBM Plex Mono", monospace;
+
+	color: var(--foreground-color);
+	background: var(--background-color);
+
+	min-width: 100vw;
+	min-height: 100vh;
+
+	padding: 16px;
+  font-size: clamp(0.7rem, 1.5vw, 1rem);
+}
+
+#main {
+	margin: 0 auto;
+
+	min-height: 100%;
+	width: min(40vw, 600px);
+	width: 800px;
+
+	display: flex;
+	flex-direction: column;
+}
+
+.header {
+	margin-bottom: 8px;
+}
+
+.bordered {
+	border: 6px double var(--foreground-color);
+	padding: 8px;
+}
+
+a::before { content: "[";}
+a::after { content: "]";}
+
+a {
+	background: var(--background-color);
+	color: var(--foreground-color);
+	text-decoration: none;
+}
+
+a:hover {
+	background: var(--foreground-color);
+	color: var(--background-color);
+}
+
+.welcome {
+	overflow-x: auto;
+}
+
+.ascii-banner {
+	font-size: 10px;
+	width: 100%;
+	text-align: center;
+}
+
+.info {
+	font-size: 14px;
+}

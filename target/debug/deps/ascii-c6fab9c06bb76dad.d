@@ -1,0 +1,11 @@
+/home/mentaal/Programming/personal-website/target/debug/deps/libascii-c6fab9c06bb76dad.rmeta: /home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/lib.rs /home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/ascii_char.rs /home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/ascii_str.rs /home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/ascii_string.rs /home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/free_functions.rs
+
+/home/mentaal/Programming/personal-website/target/debug/deps/libascii-c6fab9c06bb76dad.rlib: /home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/lib.rs /home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/ascii_char.rs /home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/ascii_str.rs /home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/ascii_string.rs /home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/free_functions.rs
+
+/home/mentaal/Programming/personal-website/target/debug/deps/ascii-c6fab9c06bb76dad.d: /home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/lib.rs /home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/ascii_char.rs /home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/ascii_str.rs /home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/ascii_string.rs /home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/free_functions.rs
+
+/home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/lib.rs:
+/home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/ascii_char.rs:
+/home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/ascii_str.rs:
+/home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/ascii_string.rs:
+/home/mentaal/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ascii-1.1.0/src/free_functions.rs:
