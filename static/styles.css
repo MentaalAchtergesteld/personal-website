@@ -44,6 +44,21 @@ body {
 }
 
 .bordered {
+	border: 2px solid var(--foreground-color);
+	padding: 8px;
+}
+
+.border{
+	border: 2px solid var(--foreground-color);
+	padding: 8px;
+}
+
+.double-bordered {
+	border: 6px double var(--foreground-color);
+	padding: 8px;
+}
+
+.double-border {
 	border: 6px double var(--foreground-color);
 	padding: 8px;
 }
@@ -62,16 +77,32 @@ a:hover {
 	color: var(--background-color);
 }
 
-.welcome {
-	overflow-x: auto;
-}
-
 .ascii-banner {
 	font-size: 10px;
 	width: 100%;
 	text-align: center;
 }
 
-.info {
-	font-size: 14px;
+span {
+	white-space: nowrap;
+	flex-grow: 1;
 }
+
+.flex-column {
+	display: flex;
+	flex-direction: column;
+}
+
+.flex-row {
+	display: flex;
+	flex-direction: row;
+}
+
+.gap4 { gap: 4px; }
+.gap8 { gap: 8px; }
+
+.font-small { font-size: 14px; }
+
+.align-center { align-items: center; }
+
+.center { text-align: center; }
