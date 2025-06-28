@@ -63,16 +63,16 @@ body {
 	padding: 8px;
 }
 
-a::before { content: "[";}
-a::after { content: "]";}
+.nav-link::before { content: "[";}
+.nav-link::after { content: "]";}
 
-a {
+.nav-link {
 	background: var(--background-color);
 	color: var(--foreground-color);
 	text-decoration: none;
 }
 
-a:hover {
+.nav-link:hover {
 	background: var(--foreground-color);
 	color: var(--background-color);
 }
@@ -106,3 +106,16 @@ span {
 .align-center { align-items: center; }
 
 .center { text-align: center; }
+
+footer {
+	display: flex; 
+	align-items: center;
+	gap: 8px;
+	vertical-align: middle;
+	text-align: center;
+}
+
+footer > a {
+	display: flex;
+	align-items: center;
+}

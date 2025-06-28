@@ -14,9 +14,24 @@ fn head(title: &str) -> Markup {
     }
 }
 
+fn footer() -> Markup {
+    html! {
+        footer.double-border.font-small  {
+            p { "Made with " }
+            a href="https://www.htmx.org" {
+                img src="/img/htmx.svg" alt="HTMX" height="16";
+            }
+            p { " and "}
+            a href="https://htmx.org" {
+                img src="/img/rust.svg" alt="Rust" height="16";
+            }
+        }
+    }
+}
+
 fn nav_element(name: &str, url: &str) -> Markup {
     html! {
-        a href=(url)
+        a.nav-link href=(url)
             hx-get=(url)
             hx-target="#main"
             hx-swap="outerHTML"
@@ -27,7 +42,7 @@ fn nav_element(name: &str, url: &str) -> Markup {
 
 pub fn navbar() -> Markup {
     html! {
-       section.double-border {
+       section.double-border.flex-row.gap8 {
            (nav_element("Home",      "/home"))
            (nav_element("Guestbook", "/guestbook"))
            (nav_element("Projects",  "/projects"))
@@ -43,6 +58,7 @@ pub fn page(title: &str, content: Markup) -> Markup {
             section #main {
                 (navbar())
                 (content)
+                (footer())
             }
         }
     }
@@ -100,7 +116,7 @@ pub fn now_playing() -> Markup {
                 "Loading now playing..."
             }
         }
-    }
+ }
 }
 
 pub fn current_time() -> Markup {
