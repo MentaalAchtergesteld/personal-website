@@ -1,8 +1,10 @@
-use std::{fs::{self}, time::Duration};
+use std::{fs::{self}, time::{Duration, Instant}};
 
+use chrono::{DateTime, Datelike, Local, Utc};
 use maud::{html, Markup, DOCTYPE};
+use serde::de::value::MapAccessDeserializer;
 
-use crate::App;
+use crate::{App, Message};
 
 fn head(title: &str) -> Markup {
     html! {
@@ -104,7 +106,7 @@ pub fn bulletpoint_about() -> Markup {
 
 pub fn now_playing() -> Markup {
     html! {
-        marquee.bordered 
+        marquee.bordered.flex-grow
             scrollamount="2"
             behavior="alternate"
         {
@@ -123,7 +125,7 @@ pub fn current_time() -> Markup {
     let now = chrono::Local::now();
     let formatted = format!("⏲ {}", now.format("%H:%M:%S"));
     html! {
-        span.bordered.center 
+        span.bordered.center.flex-grow 
             hx-get="/current-time"
             hx-trigger="load delay:1s"
             hx-swap="outerHTML"
@@ -141,7 +143,7 @@ pub fn weather() -> Result<Markup, ()> {
         .map_err(|e| eprintln!("ERROR: couldn't read response body into string: {e}"))?;
 
     Ok(html! {
-        span.bordered.center {
+        span.bordered.center.flex-grow {
             (weather)
         }
     })
@@ -162,7 +164,7 @@ pub fn host_uptime() -> Result<Markup, ()> {
             let formatted = format!("⏱ Host Uptime: {} days, {} hours, {} minutes", days, hours, minutes);
 
     Ok(html! {
-        span.bordered.center
+        span.bordered.center.flex-grow
             hx-get="/host-uptime"
             hx-trigger="load delay:1s"
             hx-swap="outerHTML"
@@ -193,9 +195,67 @@ pub fn home() -> Result<Markup, ()> {
     }))
 }
 
-pub fn guestbook() -> Markup {
+fn format_timestamp(timestamp: DateTime<Utc>) -> String {
+    let local_ts = timestamp.with_timezone(&Local);
+    let now = Local::now();
+
+    let time_str = local_ts.format("%H:%M");
+
+    let ts_date = local_ts.date_naive();
+
+    let today = now.date_naive();
+    let yesterday = today.pred_opt().unwrap();
+
+    if ts_date == today {
+        format!("Today, {}", time_str)
+    } else if ts_date == yesterday {
+        format!("Yesterday, {}", time_str)
+    } else {
+        format!("{}-{:02}, {}", local_ts.year(), local_ts.month(), time_str)
+    }
+}
+
+fn message(message: &Message)-> Markup {
+    html! {
+        div.border.message.font-small {
+            div.title.flex-row.space-between {
+                h3 { (message.author) }
+                span.font-tiny { (format_timestamp(message.timestamp)) }
+            }
+            p { (message.content) }
+        }
+    }
+}
+
+pub fn messages(messages: &Vec<Message>) -> Markup {
+    html! {
+        section.flex-column.gap4 #messages {
+            @for msg in messages.iter().rev() {
+                (message(msg))
+            }
+        }
+    }
+}
+
+pub fn message_input() -> Markup {
+    html! {
+        form.flex-column hx-post="/api/guestbook" hx-target="#messages" {
+            div.flex-row {
+                input.border required style="flex-grow: 1;" placeholder="Name" type="text" name="author";
+                button type="submit" { "Post!" }
+            }
+            textarea.border required rows="3" placeholder="Leave a message!" name="content" {}
+        }
+    }
+}
+
+pub fn guestbook(app: &App) -> Markup {
     page("Guestbook", html! {
         img .border src="/img/underconstruction.gif";
+        section.double-border.flex-column.gap16 {
+            (message_input()) 
+            (messages(&app.messages))
+        }
     })
 }
 

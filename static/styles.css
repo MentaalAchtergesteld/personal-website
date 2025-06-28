@@ -85,6 +85,9 @@ body {
 
 span {
 	white-space: nowrap;
+}
+
+.flex-grow {
 	flex-grow: 1;
 }
 
@@ -98,12 +101,15 @@ span {
 	flex-direction: row;
 }
 
-.gap4 { gap: 4px; }
-.gap8 { gap: 8px; }
+.gap4  { gap: 4px; }
+.gap8  { gap: 8px; }
+.gap16 { gap: 16px; }
 
 .font-small { font-size: 14px; }
+.font-tiny  { font-size: 12px; }
 
 .align-center { align-items: center; }
+.space-between { justify-content: space-between; }
 
 .center { text-align: center; }
 
@@ -118,4 +124,32 @@ footer {
 footer > a {
 	display: flex;
 	align-items: center;
+}
+
+input {
+	background-color: var(--background-color);
+	color: var(--foreground-color);
+}
+
+button {
+	padding-left: 16px;
+	padding-right: 16px;
+	background-color: var(--foreground-color);
+	color: var(--background-color);
+	font-weight: bold;
+	border: none;
+	cursor: pointer;
+}
+
+button:hover {
+  background-color: hsl(260, 85%, 80%);
+  color: hsl(0, 0%, 10%);
+}
+
+textarea {
+	resize: vertical;
+	min-height: 1.5em;
+
+	background-color: var(--background-color);
+	color: var(--foreground-color);
 }
