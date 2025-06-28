@@ -18,11 +18,11 @@ fn footer() -> Markup {
     html! {
         footer.double-border.font-small  {
             p { "Made with " }
-            a href="https://www.htmx.org" {
+            a href="https://www.htmx.org" target="_blank" rel="noopener noreferrer" {
                 img src="/img/htmx.svg" alt="HTMX" height="16";
             }
             p { " and "}
-            a href="https://htmx.org" {
+            a href="https://htmx.org" target="_blank" rel="noopener noreferrer" {
                 img src="/img/rust.svg" alt="Rust" height="16";
             }
         }

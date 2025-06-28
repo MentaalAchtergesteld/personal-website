@@ -2,7 +2,6 @@
 
 set -e
 
-
 PI_USER="mentaal"
 PI_HOST="raspberrypi"
 REMOTE_DIR="/home/mentaal/website"
