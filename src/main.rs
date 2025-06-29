@@ -43,7 +43,7 @@ impl App {
 
         Ok(Self {
             spotify_api: SpotifyAPI::new(),
-            rate_limiter: RateLimiter::new(Duration::from_secs(1)),
+            rate_limiter: RateLimiter::new(Duration::from_secs(10)),
             db_connection
         })
     }
