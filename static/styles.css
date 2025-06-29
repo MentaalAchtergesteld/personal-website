@@ -32,9 +32,13 @@ body {
 	margin: 0 auto;
 
 	min-height: 100%;
-	width: min(40vw, 600px);
 	width: 800px;
+	
+	display: flex;
+	flex-direction: column;
+}
 
+#content {
 	display: flex;
 	flex-direction: column;
 }
@@ -109,6 +113,7 @@ span {
 .font-tiny  { font-size: 12px; }
 
 .align-center { align-items: center; }
+.justify-center { justify-content: center; }
 .space-between { justify-content: space-between; }
 
 .center { text-align: center; }
@@ -152,4 +157,10 @@ textarea {
 
 	background-color: var(--background-color);
 	color: var(--foreground-color);
+}
+
+.gator {
+	height: 128px;
+	aspect-ratio: initial;
+	object-fit: scale-down;
 }

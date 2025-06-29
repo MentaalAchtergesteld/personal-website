@@ -1,7 +1,41 @@
 use std::{env, time::{Duration, Instant}};
-
-use base64::{engine, Engine};
 use serde_json::Value;
+
+fn base64_encode(input: &str) -> String {
+    const CHARS: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let bytes = input.as_bytes();
+    let mut encoded = String::new();
+    let mut i = 0;
+
+    while i < bytes.len() {
+        let b0 = bytes[i];
+        let b1 = if i + 1 < bytes.len() { bytes[i + 1] } else { 0 };
+        let b2 = if i + 2 < bytes.len() { bytes[i + 2] } else { 0 };
+
+        let idx0 = b0 >> 2;
+        let idx1 = ((b0 & 0x03) << 4) | (b1 >> 4);
+        let idx2 = ((b1 & 0x0f) << 2) | (b2 >> 6);
+        let idx3 = b2 & 0x3f;
+
+        encoded.push(CHARS[idx0 as usize] as char);
+        encoded.push(CHARS[idx1 as usize] as char);
+
+        if i + 1 < bytes.len() {
+            encoded.push(CHARS[idx2 as usize] as char);
+        } else {
+            encoded.push('=');
+        }
+
+        if i + 2 < bytes.len() {
+            encoded.push(CHARS[idx3 as usize] as char);
+        } else {
+            encoded.push('=');
+        }
+
+        i += 3;
+    }
+    encoded
+}
 
 pub struct SpotifyAPI {
     client_id: String,
@@ -25,7 +59,7 @@ impl SpotifyAPI {
     }
 
     pub fn refresh_access_token(&mut self) -> Result<(), ()> {
-        let basic_auth = engine::general_purpose::STANDARD.encode(format!("{}:{}", self.client_id, self.client_secret));
+        let basic_auth = base64_encode(&format!("{}:{}", self.client_id, self.client_secret));
         let response = ureq::post("https://accounts.spotify.com/api/token")
             .header("Authorization", &format!("Basic {}", basic_auth))
             .send_form([
