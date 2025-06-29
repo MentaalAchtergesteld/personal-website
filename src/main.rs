@@ -22,7 +22,6 @@ struct Message {
 
 struct App {
     pub spotify_api: SpotifyAPI,
-    pub messages: Vec<Message>,
     pub rate_limiter: RateLimiter,
     pub db_connection: Connection,
 }
@@ -44,7 +43,6 @@ impl App {
 
         Ok(Self {
             spotify_api: SpotifyAPI::new(),
-            messages: Vec::new(),
             rate_limiter: RateLimiter::new(Duration::from_secs(1)),
             db_connection
         })
