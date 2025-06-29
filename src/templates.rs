@@ -1,8 +1,8 @@
-use std::{fs::{self}, time::Duration};
+use std::{fs::{self}, time::{self, Duration}};
 
 use chrono::{DateTime, Datelike, Local, Utc};
 use maud::{html, Markup, DOCTYPE};
-use rusqlite::Connection;
+use rusqlite::{params_from_iter, Connection, Row};
 
 use crate::{App, Message};
 
@@ -235,6 +235,8 @@ pub fn home() -> Markup {
     }
 }
 
+// GUESTBOOK
+
 fn format_timestamp(timestamp: DateTime<Utc>) -> String {
     let local_ts = timestamp.with_timezone(&Local);
     let now = Local::now();
@@ -254,7 +256,7 @@ fn format_timestamp(timestamp: DateTime<Utc>) -> String {
     }
 }
 
-fn message(message: &Message)-> Markup {
+pub fn message(message: &Message)-> Markup {
     html! {
         div.border.message.font-small {
             div.title.flex-row.space-between {
@@ -266,58 +268,61 @@ fn message(message: &Message)-> Markup {
     }
 }
 
-// GUESTBOOK
 
-fn get_messages(conn: &Connection, limit: u32, offset: u32) -> rusqlite::Result<Vec<Message>> {
-    let mut stmt = conn.prepare(
-        "SELECT id, author, content, timestamp
-        FROM messages
-        ORDER BY timestamp DESC
-        LIMIT ?1 OFFSET ?2"
-    )?;
+pub fn get_messages(conn: &Connection, last_id: Option<u32>, limit: u32) -> rusqlite::Result<Vec<Message>> {
+    let (sql, params) = match last_id {
+        Some(id) => (
+            "SELECT id, author, content, timestamp FROM messages WHERE id < ? ORDER BY id DESC LIMIT ?",
+            vec![id, limit]
+        ),
+        None => (
+            "SELECT id, author, content, timestamp FROM messages ORDER BY id DESC LIMIT ?",
+            vec![limit]
+        )
+    };
 
-    let message_iter = stmt.query_map([limit, offset], |row| {
+    let mut stmt = conn.prepare(sql)?;
+    let iter = stmt.query_map(params_from_iter(params), |row| {
         let timestamp_str: String = row.get(3)?;
         let timestamp = DateTime::parse_from_rfc3339(&timestamp_str)
             .map(|dt| dt.with_timezone(&Utc))
-            .unwrap_or_else(|_| Utc::now());
+            .unwrap_or(Utc::now());
+
         Ok(Message {
             id: row.get(0)?,
             author: row.get(1)?,
             content: row.get(2)?,
-            timestamp,
+            timestamp
         })
     })?;
-    
-    message_iter.collect()
+
+    iter.collect()
 }
 
-pub fn messages(conn: &Connection, offset: u32) -> Markup {
-    let limit = 10;
-    let messages = get_messages(conn, limit, offset).unwrap_or_default();
+pub fn messages(conn: &Connection, last_id: Option<u32>, limit: u32) -> Markup {
+    let messages = get_messages(conn, last_id, limit).unwrap_or_default();
+
+    let next_last_id = messages.last().map(|msg| msg.id);
 
     html! {
-        section.flex-column.gap4 #messages {
             @for msg in &messages {
                 (message(msg))
             }
 
-            @if messages.len() == limit as usize {
-                button
-                    hx-get=(format!("/guestbook/messages?offset={}", offset + limit))
-                    hx-target="#load-more"
+            @if let Some(next_id) = next_last_id {
+                span #load-message
+                    hx-get=(format!("/guestbook/messages?last_id={}", next_id))
+                    hx-trigger="revealed"
+                    hx-target="#load-message"
                     hx-swap="outerHTML"
-                    hx-oob="true"
-                    #load-more
-                { "Load more" }
+                    {}
             }
-        }
     }
 }
 
 pub fn message_input() -> Markup {
     html! {
-        form.flex-column hx-post="/guestbook" hx-target="#messages" hx-swap="beforebegin" {
+        form.flex-column hx-post="/guestbook" hx-target="#messages" hx-swap="afterbegin" {
             div.flex-row {
                 input.border required style="flex-grow: 1;" placeholder="Name" type="text" name="author";
                 button type="submit" { "Post!" }
@@ -332,7 +337,11 @@ pub fn guestbook() -> Markup {
         img .border src="static/img/underconstruction.gif";
         section.double-border.flex-column.gap16 {
             (message_input()) 
-            div hx-get="/guestbook/messages" hx-trigger="load" hx-swap="outerHTML" { "Loading messages... " }
+            div.flex-column.gap4 #messages 
+                hx-get="/guestbook/messages"
+                hx-trigger="load"
+                hx-swap="innerHTML"
+            { span { "Loading messages..." } }
         }
     }
 }

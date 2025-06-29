@@ -1,9 +1,10 @@
 use std::{fs::File, io::Read, net::IpAddr, path::Path, str::FromStr, sync::{Arc, Mutex}, time::Duration};
 use chrono::{DateTime, Local, Utc};
+use maud::html;
 use ratelimiter::RateLimiter;
 use rusqlite::Connection;
 use spotify::SpotifyAPI;
-use templates::page;
+use templates::{get_messages, page};
 use threadpool::ThreadPool;
 use tiny_http::{Header, Method, Request, Response, Server, StatusCode};
 
@@ -13,6 +14,7 @@ mod urldecode;
 mod spotify;
 mod templates;
 
+#[derive(Debug)]
 struct Message {
     id: i32,
     author: String,
@@ -43,7 +45,7 @@ impl App {
 
         Ok(Self {
             spotify_api: SpotifyAPI::new(),
-            rate_limiter: RateLimiter::new(Duration::from_secs(10)),
+            rate_limiter: RateLimiter::new(Duration::from_secs(0)),
             db_connection
         })
     }
@@ -118,13 +120,12 @@ fn handle_fragment(mut request: Request, app: &mut App) -> Result<(), ()> {
         (Method::Get, "/host-uptime")  => ("Host Uptime",  templates::host_uptime()),
 
         (Method::Get, "/guestbook/messages") => ("Guestbook Messages", {
-            let offset = request.url().split('?')
+            let last_id = request.url().split('?')
                 .nth(1)
-                .and_then(|q| q.strip_prefix("offset="))
-                .and_then(|v| u32::from_str(v).ok())
-                .unwrap_or(0);
+                .and_then(|q| q.strip_prefix("last_id="))
+                .and_then(|v| u32::from_str(v).ok());
 
-            templates::messages(&app.db_connection, offset)
+            templates::messages(&app.db_connection, last_id, 10)
         }),
 
         (Method::Post, "/guestbook") => ("Guestbook Messages", {
@@ -146,7 +147,13 @@ fn handle_fragment(mut request: Request, app: &mut App) -> Result<(), ()> {
                 }
             } 
 
-            templates::messages(&app.db_connection, 0)
+            let messages = get_messages(&app.db_connection, None, 1).unwrap_or_default();
+
+            if let Some(msg) = messages.first() {
+                templates::message(msg)
+            } else {
+                html! {}
+            }
         }),
         _ => ("Not Found", templates::not_found())
     };
