@@ -2,6 +2,7 @@ use std::{fs::{self}, time::Duration};
 
 use chrono::{DateTime, Datelike, Local, Utc};
 use maud::{html, Markup, DOCTYPE};
+use rusqlite::Connection;
 
 use crate::{App, Message};
 
@@ -267,11 +268,48 @@ fn message(message: &Message)-> Markup {
 
 // GUESTBOOK
 
-pub fn messages(messages: &Vec<Message>) -> Markup {
+fn get_messages(conn: &Connection, limit: u32, offset: u32) -> rusqlite::Result<Vec<Message>> {
+    let mut stmt = conn.prepare(
+        "SELECT id, author, content, timestamp
+        FROM messages
+        ORDER BY timestamp DESC
+        LIMIT ?1 OFFSET ?2"
+    )?;
+
+    let message_iter = stmt.query_map([limit, offset], |row| {
+        let timestamp_str: String = row.get(3)?;
+        let timestamp = DateTime::parse_from_rfc3339(&timestamp_str)
+            .map(|dt| dt.with_timezone(&Utc))
+            .unwrap_or_else(|_| Utc::now());
+        Ok(Message {
+            id: row.get(0)?,
+            author: row.get(1)?,
+            content: row.get(2)?,
+            timestamp,
+        })
+    })?;
+    
+    message_iter.collect()
+}
+
+pub fn messages(conn: &Connection, offset: u32) -> Markup {
+    let limit = 10;
+    let messages = get_messages(conn, limit, offset).unwrap_or_default();
+
     html! {
         section.flex-column.gap4 #messages {
-            @for msg in messages.iter().rev() {
+            @for msg in &messages {
                 (message(msg))
+            }
+
+            @if messages.len() == limit as usize {
+                button
+                    hx-get=(format!("/guestbook/messages?offset={}", offset + limit))
+                    hx-target="#load-more"
+                    hx-swap="outerHTML"
+                    hx-oob="true"
+                    #load-more
+                { "Load more" }
             }
         }
     }
@@ -279,7 +317,7 @@ pub fn messages(messages: &Vec<Message>) -> Markup {
 
 pub fn message_input() -> Markup {
     html! {
-        form.flex-column hx-post="/guestbook" hx-target="#messages" {
+        form.flex-column hx-post="/guestbook" hx-target="#messages" hx-swap="beforebegin" {
             div.flex-row {
                 input.border required style="flex-grow: 1;" placeholder="Name" type="text" name="author";
                 button type="submit" { "Post!" }
