@@ -1,6 +1,7 @@
 use std::{fs::File, io::Read, net::IpAddr, path::Path, str::FromStr, sync::{Arc, Mutex}, time::Duration};
 use chrono::{DateTime, Local, Utc};
 use maud::html;
+use projects::{load_projects, Project};
 use ratelimiter::RateLimiter;
 use rusqlite::Connection;
 use spotify::SpotifyAPI;
@@ -11,6 +12,7 @@ use tiny_http::{Header, Method, Request, Response, Server, StatusCode};
 mod threadpool;
 mod ratelimiter;
 mod urldecode;
+mod projects;
 mod spotify;
 mod templates;
 
@@ -26,6 +28,8 @@ struct App {
     pub spotify_api: SpotifyAPI,
     pub rate_limiter: RateLimiter,
     pub db_connection: Connection,
+
+    pub projects: Vec<Project>,
 }
 
 impl App {
@@ -43,10 +47,13 @@ impl App {
             []
         ).map_err(|e| eprintln!("ERROR: couldn't execute on database: {e}"))?;
 
+        let projects = load_projects("./static/projects.toml")?;
+
         Ok(Self {
             spotify_api: SpotifyAPI::new(),
             rate_limiter: RateLimiter::new(Duration::from_secs(0)),
-            db_connection
+            db_connection,
+            projects
         })
     }
 }
@@ -69,7 +76,6 @@ fn handle_static(request: Request) -> Result<(), ()> {
     let path = Path::new("./").join(rel_path);
 
     if !path.exists() || !path.is_file() {
-        println!("{path:?}");
         return send_response(request, Response::from_string(templates::not_found())
             .with_status_code(StatusCode(404))
             .with_header(Header::from_str("Content-Type: text/html").unwrap())
@@ -111,7 +117,14 @@ fn handle_fragment(mut request: Request, app: &mut App) -> Result<(), ()> {
     let (title, template) = match (method, url) {
         (Method::Get, "/" | "/home") => ("Home", templates::home()),
         (Method::Get, "/guestbook")  => ("Guestbook", templates::guestbook()),
-        (Method::Get, "/projects")   => ("Projects", templates::projects()),
+        (Method::Get, "/projects")   => ("Projects", {
+            let last_id = request.url().split('?')
+                .nth(1)
+                .and_then(|q| q.strip_prefix("last_id="))
+                .and_then(|v| usize::from_str(v).ok());
+
+            templates::projects(&app.projects, last_id, 10)
+        }),
         (Method::Get, "/interests")  => ("Interests", templates::interests()),
 
         (Method::Get, "/now-playing")  => ("Now Playing",  templates::now_playing(app)),
@@ -183,9 +196,10 @@ fn handle_request(request: Request, app: &mut App) -> Result<(), ()> {
 }
 
 fn main() -> Result<(), ()> {
-    let pool = ThreadPool::new(4);
 
-    let app = Arc::new(Mutex::new(App::new()?));
+    let app = App::new()
+        .map_err(|_| eprintln!("ERROR: couldn't create App"))?;
+    let app = Arc::new(Mutex::new(app));
 
     let address = "127.0.0.1:3000";
     let server = Server::http(address)
@@ -193,6 +207,7 @@ fn main() -> Result<(), ()> {
 
     println!("INFO: started server at {address}");
 
+    let pool = ThreadPool::new(4);
     for request in server.incoming_requests() {
         let app = Arc::clone(&app);
         pool.execute(move || {

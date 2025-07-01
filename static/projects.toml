@@ -1,0 +1,28 @@
+[[project]]
+title = "Personal Website"
+description = "This website, made with Rust and HTMX."
+source_url = "https://github.com/MentaalAchtergesteld/personal-website"
+deploy_url = "https://dev.mentaalachtergesteld.nl"
+image_url="/static/img/personal-website.png"
+
+[[project]]
+title = "Mandelbrot Explorer"
+description = "A simple mandelbrot set explorer, lacking infinite zoom."
+source_url = "https://github.com/MentaalAchtergesteld/mandelbrot-explorer"
+deploy_url = "https://mentaalachtergesteld.nl/mandelbrot-explorer"
+image_url="/static/img/mandelbrot.png"
+
+[[project]]
+title = "RISC-V Simulator"
+description = "An incomplete RISC-V simulator written in rust for learning purposes."
+source_url = "https://github.com/MentaalAchtergesteld/riscv-sim"
+
+[[project]]
+title = "CC-SCRIPTS"
+description = "A collection of scripts and libraies i use with ComputerCraft: Tweaked, including a script manager that allows for installing and updating scripts from within the game."
+source_url = "https://github.com/MentaalAchtergesteld/CC-SCRIPTS"
+
+[[project]]
+title = "Nvim Config"
+description = "My NeoVIM config, largely based on BreadOnPenguin's config."
+source_url = "https://github.com/MentaalAchtergesteld/nvim-config"

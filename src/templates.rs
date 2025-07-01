@@ -4,7 +4,7 @@ use chrono::{DateTime, Datelike, Local, Utc};
 use maud::{html, Markup, DOCTYPE};
 use rusqlite::{params_from_iter, Connection, Row};
 
-use crate::{App, Message};
+use crate::{projects::Project, App, Message};
 
 // GLOBAL
 
@@ -256,19 +256,6 @@ fn format_timestamp(timestamp: DateTime<Utc>) -> String {
     }
 }
 
-pub fn message(message: &Message)-> Markup {
-    html! {
-        div.border.message.font-small {
-            div.title.flex-row.space-between {
-                h3 { (message.author) }
-                span.font-tiny { (format_timestamp(message.timestamp)) }
-            }
-            p { (message.content) }
-        }
-    }
-}
-
-
 pub fn get_messages(conn: &Connection, last_id: Option<u32>, limit: u32) -> rusqlite::Result<Vec<Message>> {
     let (sql, params) = match last_id {
         Some(id) => (
@@ -297,6 +284,18 @@ pub fn get_messages(conn: &Connection, last_id: Option<u32>, limit: u32) -> rusq
     })?;
 
     iter.collect()
+}
+
+pub fn message(message: &Message)-> Markup {
+    html! {
+        div.border.message.font-small {
+            div.title.flex-row.space-between {
+                h3 { (message.author) }
+                span.font-tiny { (format_timestamp(message.timestamp)) }
+            }
+            p { (message.content) }
+        }
+    }
 }
 
 pub fn messages(conn: &Connection, last_id: Option<u32>, limit: u32) -> Markup {
@@ -347,10 +346,49 @@ pub fn guestbook() -> Markup {
 }
 
 // PROJECTS
+pub fn project(project: &Project) -> Markup {
+    html! {
+        div.border.project.font-small.flex-row {
+            div.flex-column.flex-grow style="justify-content: space-between;" {
+                div {
+                    h3 { (project.title) }
+                    p { (project.description) }
+                }
+                div {
+                    a.nav-link href=(project.source_url) target="_blank" rel="noopener noreferrer" { "Source" }
+                    @if let Some(deploy_url) = &project.deploy_url {
+                        a.nav-link href=(deploy_url) target="_blank" rel="noopener noreferrer" { "Deployed" }
+                    }
+                }
+            }
+            @if let Some(image_url) = &project.image_url {
+                img style="max-height: 96px;" src=(image_url);
+            }
+        }
+    }
+}
 
-pub fn projects() -> Markup {
+pub fn projects(projects: &Vec<Project>, last_id: Option<usize>, limit: usize) -> Markup {
+    let last_id = last_id.unwrap_or_default();
+    let limit = limit.min(projects.len());
+    let selected_projects = &projects[last_id..limit];
+
+    let next_id = last_id + limit + 1;
     html! {
         img .border src="static/img/underconstruction.gif";
+
+        @for p in selected_projects {
+            (project(p))
+        }
+
+        @if projects.len() >= next_id {
+            span #load-message
+                hx-get=(format!("/guestbook/messages?last_id={}", next_id))
+                hx-trigger="revealed"
+                hx-target="#load-message"
+                hx-swap="outerHTML"
+                {}
+        }
     }
 }
 
