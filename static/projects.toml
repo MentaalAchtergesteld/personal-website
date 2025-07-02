@@ -13,6 +13,13 @@ deploy_url = "https://mentaalachtergesteld.nl/mandelbrot-explorer"
 image_url="/static/img/mandelbrot.png"
 
 [[project]]
+title = "Cellular Automata"
+description = "Cellular Automata implemented using a custom rule syntax, inspired by Tsoding."
+source_url = "https://github.com/MentaalAchtergesteld/cellular-automata"
+deploy_url = "https://mentaalachtergesteld.nl/cellular-automata"
+image_url = "/static/img/cellular-automata.png"
+
+[[project]]
 title = "RISC-V Simulator"
 description = "An incomplete RISC-V simulator written in rust for learning purposes."
 source_url = "https://github.com/MentaalAchtergesteld/riscv-sim"
