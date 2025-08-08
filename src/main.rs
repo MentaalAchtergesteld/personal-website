@@ -13,6 +13,7 @@ mod threadpool;
 mod ratelimiter;
 mod urldecode;
 mod projects;
+mod lastfm;
 mod spotify;
 mod templates;
 
@@ -127,7 +128,7 @@ fn handle_fragment(mut request: Request, app: &mut App) -> Result<(), ()> {
         }),
         (Method::Get, "/interests")  => ("Interests", templates::interests()),
 
-        (Method::Get, "/now-playing")  => ("Now Playing",  templates::now_playing(app)),
+        (Method::Get, "/now-playing")  => ("Now Playing",  templates::now_playing()),
         (Method::Get, "/current-time") => ("Current Time", templates::current_time()),
         (Method::Get, "/weather")      => ("Weather",      templates::weather()),
         (Method::Get, "/host-uptime")  => ("Host Uptime",  templates::host_uptime()),

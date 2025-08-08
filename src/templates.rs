@@ -4,7 +4,7 @@ use chrono::{DateTime, Datelike, Local, Utc};
 use maud::{html, Markup, DOCTYPE};
 use rusqlite::{params_from_iter, Connection, Row};
 
-use crate::{projects::Project, App, Message};
+use crate::{lastfm, projects::Project, App, Message};
 
 // GLOBAL
 
@@ -121,8 +121,8 @@ pub fn bulletpoint_about() -> Markup {
     }
 } 
 
-pub fn now_playing(app: &mut App) -> Markup {
-    let now_playing = match app.spotify_api.get_now_playing() {
+pub fn now_playing() -> Markup {
+    let now_playing = match lastfm::get_now_playing() {
         Ok(np) => np,
         Err(_) => "Couldn't get currently playing song".to_string(),
     };
