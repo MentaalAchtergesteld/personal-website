@@ -33,3 +33,9 @@ source_url = "https://github.com/MentaalAchtergesteld/CC-SCRIPTS"
 title = "Nvim Config"
 description = "My NeoVIM config, largely based on BreadOnPenguin's config."
 source_url = "https://github.com/MentaalAchtergesteld/nvim-config"
+
+[[project]]
+title = "C Snake"
+description = "Snake in C. My first \"project\" with C, using raylib. The code is probably terrible."
+source_url = "https://github.com/MentaalAchtergesteld/csnake"
+image_url = "/static/img/csnake.png"
