@@ -4,7 +4,6 @@ use maud::html;
 use projects::{load_projects, Project};
 use ratelimiter::RateLimiter;
 use rusqlite::Connection;
-use spotify::SpotifyAPI;
 use templates::{get_messages, page};
 use threadpool::ThreadPool;
 use tiny_http::{Header, Method, Request, Response, Server, StatusCode};
@@ -14,7 +13,6 @@ mod ratelimiter;
 mod urldecode;
 mod projects;
 mod lastfm;
-mod spotify;
 mod templates;
 
 #[derive(Debug)]
@@ -26,7 +24,6 @@ struct Message {
 }
 
 struct App {
-    pub spotify_api: SpotifyAPI,
     pub rate_limiter: RateLimiter,
     pub db_connection: Connection,
 
@@ -51,7 +48,6 @@ impl App {
         let projects = load_projects("./static/projects.toml")?;
 
         Ok(Self {
-            spotify_api: SpotifyAPI::new(),
             rate_limiter: RateLimiter::new(Duration::from_secs(0)),
             db_connection,
             projects

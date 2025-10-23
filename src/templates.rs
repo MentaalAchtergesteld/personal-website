@@ -1,10 +1,10 @@
-use std::{fs::{self}, time::{self, Duration}};
+use std::{fs::{self}, time::Duration};
 
 use chrono::{DateTime, Datelike, Local, Utc};
 use maud::{html, Markup, DOCTYPE};
-use rusqlite::{params_from_iter, Connection, Row};
+use rusqlite::{params_from_iter, Connection};
 
-use crate::{lastfm, projects::Project, App, Message};
+use crate::{lastfm, projects::Project, Message};
 
 // GLOBAL
 
@@ -20,7 +20,7 @@ fn head(title: &str) -> Markup {
         meta charset="utf-8";
         title { (title) }
         script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" {}
-        link rel="stylesheet" href="static/styles.css";
+        link rel="stylesheet" href="static/style/styles.css";
     }
 }
 
@@ -141,14 +141,14 @@ pub fn now_playing() -> Markup {
 pub fn current_time() -> Markup {
     let now = chrono::Local::now();
     let formatted = format!("⏲ {}", now.format("%H:%M:%S"));
+    let timestamp_ms = now.timestamp_millis();
+
     html! {
-        span
-            hx-get="/current-time"
-            hx-trigger="load delay:1s"
-            hx-swap="outerHTML"
+        span id="server_time" data-server-timestamp=(timestamp_ms)
         {
             (formatted)
         }
+        script src="static/script/server_time.js";
     }
 }
 

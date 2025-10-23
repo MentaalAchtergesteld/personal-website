@@ -14,7 +14,7 @@ image_url="/static/img/mandelbrot.png"
 
 [[project]]
 title = "Cellular Automata"
-description = "Cellular Automata implemented using a custom rule syntax, inspired by Tsoding."
+description = "Cellular Automata implemented using a custom rule syntax, inspired by Tsoding's Cellular Automata project."
 source_url = "https://github.com/MentaalAchtergesteld/cellular-automata"
 deploy_url = "https://mentaalachtergesteld.nl/cellular-automata"
 image_url = "/static/img/cellular-automata.png"
