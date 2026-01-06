@@ -50,6 +50,7 @@ fn head(title: &str) -> Markup {
         script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" {}
         script src="static/script/server_time.js" {}
         link rel="stylesheet" href="static/style/styles.css";
+        link rel="icon" type="image/x-icon" href="static/img/favicon.ico";
     }
 }
 
