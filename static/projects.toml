@@ -39,3 +39,10 @@ title = "C Snake"
 description = "Snake in C. My first \"project\" with C, using raylib. The code is probably terrible."
 source_url = "https://github.com/MentaalAchtergesteld/csnake"
 image_url = "/static/img/csnake.png"
+
+[[project]]
+title = "Collatz Conjecture Visualizer"
+description = "A Collatz Conjecture visualizer written in JavaScript, using HTML Canvas and AudioContext for the sound."
+source_url = "https://github.com/MentaalAchtergesteld/collatz-conjecture"
+deploy_url = "https://mentaalachtergesteld.nl/collatz-conjecture"
+image_url = "/static/img/collatz.png"
