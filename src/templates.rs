@@ -6,6 +6,31 @@ use rusqlite::{params_from_iter, Connection};
 
 use crate::{lastfm, projects::Project, Message};
 
+enum TimeFormat {
+    Clock,
+    Uptime,
+    Smart
+}
+
+fn live_time(timestamp: DateTime<Utc>, format: TimeFormat) -> Markup {
+    let ts_millis = timestamp.timestamp_millis();
+
+    let (type_str, icon) = match format {
+        TimeFormat::Clock  => ("clock", "⏲"),
+        TimeFormat::Uptime => ("uptime", "⏱"),
+        TimeFormat::Smart  => ("smart", ""),
+    };
+
+    html! {
+        span.live-time
+            data-ts=(ts_millis)
+            data-type=(type_str)
+        {
+            (icon) " Loading..."
+        }
+    }
+}
+
 // GLOBAL
 
 pub fn not_found() -> Markup {
@@ -20,6 +45,7 @@ fn head(title: &str) -> Markup {
         meta charset="utf-8";
         title { (title) }
         script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" {}
+        script src="static/script/server_time.js" {}
         link rel="stylesheet" href="static/style/styles.css";
     }
 }
@@ -139,17 +165,7 @@ pub fn now_playing() -> Markup {
 }
 
 pub fn current_time() -> Markup {
-    let now = chrono::Local::now();
-    let formatted = format!("⏲ {}", now.format("%H:%M:%S"));
-    let timestamp_ms = now.timestamp_millis();
-
-    html! {
-        span id="server_time" data-server-timestamp=(timestamp_ms)
-        {
-            (formatted)
-        }
-        script src="static/script/server_time.js";
-    }
+    live_time(Utc::now(), TimeFormat::Clock)
 }
 
 fn error_span(msg: &str, error: impl std::fmt::Display) -> Markup {
@@ -173,26 +189,12 @@ pub fn host_uptime() -> Markup {
         Err(e) => return error_span("couldn't read uptime", e),
     };
 
-    let uptime = full_uptime.split_whitespace().next().unwrap_or("0");
-    let dur = Duration::from_secs_f64(uptime.parse::<f64>().unwrap_or(0.0));
+    let seconds_str = full_uptime.split_whitespace().next().unwrap_or("0");
+    let seconds = seconds_str.parse().unwrap_or(0.0);
+    let duration = Duration::from_secs(seconds as u64);
+    let boot_time = Utc::now() - duration;
 
-    let secs = dur.as_secs();
-    let days = secs / 86400;
-    let hours = (secs % 86400) / 3600;
-    let minutes = (secs % 3600) / 60;
-    
-
-    let formatted = format!("⏱ Host Uptime: {} days, {} hours, {} minutes", days, hours, minutes);
-
-    html! {
-        span
-            hx-get="/host-uptime"
-            hx-trigger="load delay:1s"
-            hx-swap="outerHTML"
-        {
-            (formatted)
-        }
-    }
+    live_time(boot_time, TimeFormat::Uptime)
 }
 
 pub fn home() -> Markup {
@@ -267,6 +269,7 @@ pub fn get_messages(conn: &Connection, last_id: Option<u32>, limit: u32) -> rusq
             .map(|dt| dt.with_timezone(&Utc))
             .unwrap_or(Utc::now());
 
+
         Ok(Message {
             id: row.get(0)?,
             author: row.get(1)?,
@@ -283,7 +286,7 @@ pub fn message(message: &Message)-> Markup {
         div.border.message.font-small {
             div.title.flex-row.space-between {
                 h3 { (message.author) }
-                span.font-tiny { (format_timestamp(message.timestamp)) }
+                span.font-tiny { (live_time(message.timestamp, TimeFormat::Smart)) }
             }
             p { (message.content) }
         }
