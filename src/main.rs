@@ -55,7 +55,6 @@ impl App {
                 Ok(res) => {
                     let Ok(text) = res.into_body().read_to_string() else { continue; }; 
                     let Ok(mut w) = cache_clone.write() else { continue; };
-                    println!("{}", text);
                     *w = text;
                 },
                 Err(e) => eprintln!("Failed to update weather: {e}"),
