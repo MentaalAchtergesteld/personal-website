@@ -1,4 +1,4 @@
-use std::{fs::File, io::Read, net::IpAddr, path::Path, str::FromStr, sync::{Arc, Mutex}, time::Duration};
+use std::{fs::File, io::Read, net::IpAddr, path::Path, str::FromStr, sync::{Arc, Mutex, RwLock}, time::Duration};
 use chrono::{DateTime, Local, Utc};
 use maud::html;
 use projects::{load_projects, Project};
@@ -28,6 +28,7 @@ struct App {
     pub db_connection: Connection,
 
     pub projects: Vec<Project>,
+    pub weather_cache: Arc<RwLock<String>>,
 }
 
 impl App {
@@ -46,11 +47,28 @@ impl App {
         ).map_err(|e| eprintln!("ERROR: couldn't execute on database: {e}"))?;
 
         let projects = load_projects("./static/projects.toml")?;
+        let weather_cache = Arc::new(RwLock::new("Loading weather...".to_string()));
+        let cache_clone = weather_cache.clone();
+
+        std::thread::spawn(move || {loop {
+            match ureq::get("http://wttr.in/Eindhoven?format=2").call() {
+                Ok(res) => {
+                    let Ok(text) = res.into_body().read_to_string() else { continue; }; 
+                    let Ok(mut w) = cache_clone.write() else { continue; };
+                    println!("{}", text);
+                    *w = text;
+                },
+                Err(e) => eprintln!("Failed to update weather: {e}"),
+            }
+
+            std::thread::sleep(Duration::from_secs(60*15));
+        }});
 
         Ok(Self {
             rate_limiter: RateLimiter::new(Duration::from_secs(0)),
             db_connection,
-            projects
+            projects,
+            weather_cache,
         })
     }
 }
@@ -107,7 +125,7 @@ fn get_client_ip(request: &Request) -> Option<IpAddr> {
         .or_else(|| request.remote_addr().map(|addr| addr.ip()))
 }
     
-fn handle_fragment(mut request: Request, app: &mut App) -> Result<(), ()> {
+fn handle_fragment(mut request: Request, app_lock: Arc<Mutex<App>>) -> Result<(), ()> {
     let method = request.method();
     let url = request.url().split('?').next().unwrap_or("");
 
@@ -115,6 +133,7 @@ fn handle_fragment(mut request: Request, app: &mut App) -> Result<(), ()> {
         (Method::Get, "/" | "/home") => ("Home", templates::home()),
         (Method::Get, "/guestbook")  => ("Guestbook", templates::guestbook()),
         (Method::Get, "/projects")   => ("Projects", {
+            let app = app_lock.lock().unwrap();
             let last_id = request.url().split('?')
                 .nth(1)
                 .and_then(|q| q.strip_prefix("last_id="))
@@ -126,10 +145,15 @@ fn handle_fragment(mut request: Request, app: &mut App) -> Result<(), ()> {
 
         (Method::Get, "/now-playing")  => ("Now Playing",  templates::now_playing()),
         (Method::Get, "/current-time") => ("Current Time", templates::current_time()),
-        (Method::Get, "/weather")      => ("Weather",      templates::weather()),
+        (Method::Get, "/weather")      => {
+            let app = app_lock.lock().unwrap();
+            let weather_data = app.weather_cache.read().unwrap();
+            ("Weather", templates::weather(&weather_data))
+        },
         (Method::Get, "/host-uptime")  => ("Host Uptime",  templates::host_uptime()),
 
         (Method::Get, "/guestbook/messages") => ("Guestbook Messages", {
+            let app = app_lock.lock().unwrap();
             let last_id = request.url().split('?')
                 .nth(1)
                 .and_then(|q| q.strip_prefix("last_id="))
@@ -139,6 +163,7 @@ fn handle_fragment(mut request: Request, app: &mut App) -> Result<(), ()> {
         }),
 
         (Method::Post, "/guestbook") => ("Guestbook Messages", {
+            let mut app = app_lock.lock().unwrap();
             let ip = get_client_ip(&request);
 
             let allowed = if let Some(ip) = ip { app.rate_limiter.is_allowed(ip) } else { false };
@@ -185,7 +210,7 @@ fn handle_fragment(mut request: Request, app: &mut App) -> Result<(), ()> {
     send_response(request, response)
 }
 
-fn handle_request(request: Request, app: &mut App) -> Result<(), ()> {
+fn handle_request(request: Request, app: Arc<Mutex<App>>) -> Result<(), ()> {
     match request.url() {
         url if url.starts_with("/static") => handle_static(request),
         _                                 => handle_fragment(request, app),
@@ -198,7 +223,7 @@ fn main() -> Result<(), ()> {
         .map_err(|_| eprintln!("ERROR: couldn't create App"))?;
     let app = Arc::new(Mutex::new(app));
 
-    let address = "127.0.0.1:3000";
+    let address = "0.0.0.0:3000";
     let server = Server::http(address)
         .map_err(|e| eprintln!("ERROR: couldn't start server: {e}"))?;
 
@@ -208,8 +233,7 @@ fn main() -> Result<(), ()> {
     for request in server.incoming_requests() {
         let app = Arc::clone(&app);
         pool.execute(move || {
-            let mut app = app.lock().unwrap();
-            let _ = handle_request(request, &mut *app);
+            let _ = handle_request(request, app);
         });
     }
 

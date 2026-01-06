@@ -130,7 +130,7 @@ pub fn now_playing() -> Markup {
     html! {
         span
             hx-get="/now-playing"
-            hx-trigger="load delay:1s"
+            hx-trigger="load delay:30s"
             hx-swap="outerHTML"
         {
             (now_playing)
@@ -157,21 +157,13 @@ fn error_span(msg: &str, error: impl std::fmt::Display) -> Markup {
     html! { span { (msg) } }
 }
 
-pub fn weather() -> Markup {
-    let response = match ureq::get("https://wttr.in/Eindhoven?format=2").call() {
-        Ok(response) => response,
-        Err(e) => return error_span("couldn't get weather data", e)
-    };
-
-    let weather = match response.into_body().read_to_string() {
-        Ok(weather) => weather,
-        Err(e) => return error_span("couldn't read weather data", e)
-    };
-
+pub fn weather(weather_data: &str) -> Markup {
     html! {
-        span{
-            (weather)
-        }
+        span
+            hx-get="/weather"
+            hx-trigger="load delay:1m"
+            hx-swap="outerHTML"
+        { (weather_data) }
     }
 }
 
