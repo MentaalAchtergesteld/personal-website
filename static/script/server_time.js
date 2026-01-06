@@ -13,7 +13,7 @@
 
 			switch (type) {
 				case "clock":
-					text = "⏲ " + new Date().toLocaleTimeString('nl-NL', { hour12: false });
+					text = "⏲ " + new Date().toLocaleTimeString(undefined, { hour12: false });
 					break;
 				case "uptime":
 					const diff = now - ts;
@@ -39,7 +39,7 @@
 													 && date.getMonth() === yesterday.getMonth()
 													 && date.getFullYear() === yesterday.getFullYear();
 
-					const timeStr = date.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" });
+					const timeStr = date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
 
 					if (isToday) {
 						text = `Today, ${timeStr}`;
@@ -47,7 +47,7 @@
 						text = `Yesterday, ${timeStr}`;
 					} else {
 						const options = { month: "long", year: "numeric" }
-						text = date.toLocaleDateString("nl-NL", options);
+						text = date.toLocaleDateString(undefined, options);
 					}
 					break;
 			}
