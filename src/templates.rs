@@ -58,7 +58,7 @@ fn footer() -> Markup {
                 img src="static/img/htmx.svg" alt="HTMX" height="16";
             }
             p { " and "}
-            a href="https://htmx.org" target="_blank" rel="noopener noreferrer" {
+            a href="https://rust-lang.org/" target="_blank" rel="noopener noreferrer" {
                 img src="static/img/rust.svg" alt="Rust" height="16";
             }
         }
