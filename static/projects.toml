@@ -2,21 +2,21 @@
 title = "Personal Website"
 description = "This website, made with Rust and HTMX."
 source_url = "https://github.com/MentaalAchtergesteld/personal-website"
-deploy_url = "https://dev.mentaalachtergesteld.nl"
+deploy_url = "https://mentaalachtergesteld.nl"
 image_url="/static/img/personal-website.png"
 
 [[project]]
 title = "Mandelbrot Explorer"
 description = "A simple mandelbrot set explorer, lacking infinite zoom."
 source_url = "https://github.com/MentaalAchtergesteld/mandelbrot-explorer"
-deploy_url = "https://mentaalachtergesteld.nl/mandelbrot-explorer"
+deploy_url = "https://projects.mentaalachtergesteld.nl/mandelbrot-explorer"
 image_url="/static/img/mandelbrot.png"
 
 [[project]]
 title = "Cellular Automata"
 description = "Cellular Automata implemented using a custom rule syntax, inspired by Tsoding's Cellular Automata project."
 source_url = "https://github.com/MentaalAchtergesteld/cellular-automata"
-deploy_url = "https://mentaalachtergesteld.nl/cellular-automata"
+deploy_url = "https://projects.mentaalachtergesteld.nl/cellular-automata"
 image_url = "/static/img/cellular-automata.png"
 
 [[project]]
@@ -44,5 +44,5 @@ image_url = "/static/img/csnake.png"
 title = "Collatz Conjecture Visualizer"
 description = "A Collatz Conjecture visualizer written in JavaScript, using HTML Canvas and AudioContext for the sound."
 source_url = "https://github.com/MentaalAchtergesteld/collatz-conjecture"
-deploy_url = "https://mentaalachtergesteld.nl/collatz-conjecture"
+deploy_url = "https://projects.mentaalachtergesteld.nl/collatz-conjecture/"
 image_url = "/static/img/collatz.png"
