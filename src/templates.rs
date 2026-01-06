@@ -35,7 +35,10 @@ fn live_time(timestamp: DateTime<Utc>, format: TimeFormat) -> Markup {
 
 pub fn not_found() -> Markup {
     html! {
-        h1 { "404 Not Found" }
+        section.double-border.container-flex {
+            h1.center { "404 Not Found" }
+            img.fill-img src="static/img/dassen.png";
+        } 
     }
 }
 
@@ -230,25 +233,6 @@ pub fn home() -> Markup {
 }
 
 // GUESTBOOK
-
-fn format_timestamp(timestamp: DateTime<Utc>) -> String {
-    let local_ts = timestamp.with_timezone(&Local);
-    let now = Local::now();
-
-    let time_str = local_ts.format("%H:%M");
-
-    let ts_date = local_ts.date_naive();
-
-    let today = now.date_naive();
-
-    if ts_date == today {
-        format!("Today, {}", time_str)
-    } else if Some(ts_date) == today.pred_opt() {
-        format!("Yesterday, {}", time_str)
-    } else {
-        format!("{}-{:02}, {}", local_ts.year(), local_ts.month(), time_str)
-    }
-}
 
 pub fn get_messages(conn: &Connection, last_id: Option<u32>, limit: u32) -> rusqlite::Result<Vec<Message>> {
     let (sql, params) = match last_id {
