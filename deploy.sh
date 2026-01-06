@@ -1,28 +1,19 @@
 #!/usr/bin/bash
 
-set -e
-
-PI_USER="mentaal"
+PI_USER="pi"
 PI_HOST="raspberrypi.local"
-REMOTE_DIR="/home/mentaal/website"
-BINARY_NAME="personal-website"
-BINARY_LOCATION="armv7-unknown-linux-musleabihf"
+DIR="~/website"
 
-echo "Compiling..."
-cross build --target=armv7-unknown-linux-musleabihf --release
+echo "[1/4] Building container..."
+docker buildx build --platform linux/arm64 -t pi-site:latest --load .
 
-echo "Stopping service..."
-ssh $PI_USER@$PI_HOST "sudo systemctl stop personal-website"
+echo "[2/4] Uploading to Raspberry PI"
+docker save pi-site:latest | ssh -C $PI_USER@$PI_HOST "docker load"
 
-echo "Copying compiled binary..."
-scp target/$BINARY_LOCATION/release/$BINARY_NAME \
-    $PI_USER@$PI_HOST:$REMOTE_DIR/$BINARY_NAME
-scp .env $PI_USER@$PI_HOST:$REMOTE_DIR
+echo "[3/4] Syncinv .env."
+scp .env $PI_USER@$PI_HOST:$DIR/.env
 
-echo "Synchronizing static files..."
-rsync -av --delete --checksum static/ $PI_USER@$PI_HOST:$REMOTE_DIR/static
+echo "[4/4] Restarting container..."
+ssh $PI_USER@$PI_HOST "cd $DIR && docker compose up -d --force-recreate app"
 
-echo "Restarting service..."
-ssh $PI_USER@$PI_HOST "sudo systemctl restart personal-website"
-
-echo "Deployed!"
+echo "[-/-] Finished."
