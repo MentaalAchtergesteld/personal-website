@@ -39,7 +39,7 @@
 													 && date.getMonth() === yesterday.getMonth()
 													 && date.getFullYear() === yesterday.getFullYear();
 
-					const timeStr = date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+					const timeStr = date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: false });
 
 					if (isToday) {
 						text = `Today, ${timeStr}`;
