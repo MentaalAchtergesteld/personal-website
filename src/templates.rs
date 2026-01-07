@@ -35,9 +35,9 @@ fn live_time(timestamp: DateTime<Utc>, format: TimeFormat) -> Markup {
 
 pub fn not_found() -> Markup {
     html! {
-        section.double-border.container-flex {
+        section.double-border.flex-column.align-center.gap8 {
             h1.center { "404 Not Found" }
-            img.fill-img src="static/img/dassen.png";
+            img src="static/img/dassen.png";
         } 
     }
 }
@@ -129,7 +129,7 @@ pub fn welcome_message() -> Markup {
 
 pub fn welcome() -> Markup  {
     html! {
-        section.double-border {
+        section.double-border.flex-column.gap8 {
             (ascii_banner())
             (welcome_message())
         }
@@ -140,14 +140,15 @@ pub fn bulletpoint_about() -> Markup {
     html! {
         div.flex-column {
 					span { "~/mentaalachtergesteld"	}
-          span { "♫ The Gizzverse Is Reel"	}
-          span { "☢ Professional Monster Addict"	}
-          span { "λ Schizophrenic Linux User"	}
-          span { "☺ Self-Hating Rustacean"	}
-          span { "⌨ Scared of anything but a terminal"	}
-          span { "✏ Strong minds leave projects unfinished"	}
-          span { "★ Sleep Is Fake" }
-          }
+          span { "∞ The Gizzverse Is Reel"	}
+          span { "☢ Professional monster addict"	}
+          span { "λ Arch btw"	}
+          span { "⚙ Fighting the borrow checker"	}
+          span { "⌨ UIs weren't meant to be graphical"	}
+          span { "🕸 Collector of abandoned projects"	}
+          span { "☾ Sleep deprived since '05" }
+          span { "⎋ Holder of the sacred knowledge of :wq" }
+      }
     }
 } 
 
@@ -223,6 +224,23 @@ pub fn home() -> Markup {
                         hx-get="/weather" hx-trigger="load" hx-swap="innerHTML"      { "loading weather..." } 
                     span.center.border.flex-grow
                         hx-get="/host-uptime" hx-trigger="load" hx-swap="innerHTML"  { "loading uptime..." }
+                }
+                div.flex-row.gap4 {
+                    a.center.border.flex-grow href="https://tidal.com/artist/64262665" target="_blank" rel="noopener noreferrer" {
+                        img src="static/img/tidal.svg" alt="HTMX" height="24";
+                    }
+
+                    a.center.border.flex-grow href="https://x.com/achtergesteld" target="_blank" rel="noopener noreferrer" {
+                        img src="static/img/x.svg" alt="HTMX" height="24";
+                    }
+
+                    a.center.border.flex-grow href="https://twitch.tv/mentaalachtergesteld" target="_blank" rel="noopener noreferrer" {
+                        img src="static/img/twitch.svg" alt="HTMX" height="24";
+                    }
+            
+                    a.center.border.flex-grow href="https://github.com/mentaalachtergesteld" target="_blank" rel="noopener noreferrer" {
+                        img src="static/img/github.svg" alt="HTMX" height="24";
+                    }
                 }
             }
             section.border.flex-row.justify-center {
