@@ -49,6 +49,7 @@ fn head(title: &str) -> Markup {
         title { (title) }
         script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" {}
         script src="static/script/server_time.js" {}
+        script src="static/script/message.js" {}
         link rel="stylesheet" href="static/style/styles.css";
         link rel="icon" type="image/x-icon" href="static/img/favicon.ico";
     }
@@ -285,13 +286,19 @@ pub fn get_messages(conn: &Connection, last_id: Option<u32>, limit: u32) -> rusq
 }
 
 pub fn message(message: &Message)-> Markup {
+    let is_long = message.content.chars().count() > 100;
+
     html! {
         div.border.message.font-small {
             div.title.flex-row.space-between {
                 h3 { (message.author) }
                 span.font-tiny { (live_time(message.timestamp, TimeFormat::Smart)) }
             }
-            p { (message.content) }
+            p.message-content.collapsed[is_long] { (message.content) }
+
+            @if is_long {
+                button.toggle-btn { "Show more" } 
+            }
         }
     }
 }

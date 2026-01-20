@@ -8,8 +8,6 @@ use templates::{get_messages, page};
 use threadpool::ThreadPool;
 use tiny_http::{Header, Method, Request, Response, Server, StatusCode};
 
-use crate::templates::rate_limit;
-
 mod threadpool;
 mod ratelimiter;
 mod urldecode;
