@@ -64,7 +64,7 @@ impl App {
         }});
 
         Ok(Self {
-            rate_limiter: RateLimiter::new(Duration::from_secs(0)),
+            rate_limiter: RateLimiter::new(Duration::from_secs(10)),
             db_connection,
             projects,
             weather_cache,

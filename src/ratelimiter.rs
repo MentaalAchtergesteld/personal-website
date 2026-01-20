@@ -17,7 +17,11 @@ impl RateLimiter {
         let now = Instant::now();
 
         match self.last_request.get(&ip) {
-            Some(&last) if now.duration_since(last) < self.cooldown => false,
+            Some(&last) => {
+                let is_allowed = !(now.duration_since(last) < self.cooldown);
+                self.last_request.insert(ip, now);
+                return is_allowed;
+            }
             _ => {
                 self.last_request.insert(ip, now);
                 true
