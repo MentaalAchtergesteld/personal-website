@@ -296,6 +296,17 @@ pub fn message(message: &Message)-> Markup {
     }
 }
 
+pub fn rate_limit() -> Markup {
+    html! {
+        div.border.message.font-small #form-feedback hx-swap-oob="true" {
+            div.title.flex-row.space-between {
+                h3 { "Rate Limited"}
+            }
+            p { "Try again in 10 seconds." }
+        }
+    }
+}
+
 pub fn messages(conn: &Connection, last_id: Option<u32>, limit: u32) -> Markup {
     let messages = get_messages(conn, last_id, limit).unwrap_or_default();
 
@@ -325,6 +336,7 @@ pub fn message_input() -> Markup {
                 button type="submit" { "Post!" }
             }
             textarea.border required rows="3" placeholder="Leave a message!" name="content" {}
+            div #form-feedback hx-swap-oob="true" {}
         }
     }
 }

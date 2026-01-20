@@ -8,6 +8,8 @@ use templates::{get_messages, page};
 use threadpool::ThreadPool;
 use tiny_http::{Header, Method, Request, Response, Server, StatusCode};
 
+use crate::templates::rate_limit;
+
 mod threadpool;
 mod ratelimiter;
 mod urldecode;
@@ -116,11 +118,16 @@ fn handle_static(request: Request) -> Result<(), ()> {
 }
 
 fn get_client_ip(request: &Request) -> Option<IpAddr> {
+    if let Some(ip) = request.headers().iter()
+        .find(|h| h.field.equiv("CF-Connecting-IP"))
+        .and_then(|h| h.value.as_str().parse::<IpAddr>().ok()) 
+    {
+        return Some(ip);
+    }
     request.headers().iter()
         .find(|h| h.field.equiv("X-Forwarded-For"))
-        .and_then(|h| h.value.as_str().split(',').next()
-            .and_then(|ip_str| ip_str.trim().parse::<IpAddr>().ok())
-        )
+        .and_then(|h| h.value.as_str().split(',').next())
+        .and_then(|ip_str| ip_str.trim().parse::<IpAddr>().ok())
         .or_else(|| request.remote_addr().map(|addr| addr.ip()))
 }
     
@@ -166,6 +173,7 @@ fn handle_fragment(mut request: Request, app_lock: Arc<Mutex<App>>) -> Result<()
             let ip = get_client_ip(&request);
 
             let allowed = if let Some(ip) = ip { app.rate_limiter.is_allowed(ip) } else { false };
+
             if allowed {
                 let mut body = String::new();
                 request.as_reader().read_to_string(&mut body).unwrap();
@@ -179,15 +187,20 @@ fn handle_fragment(mut request: Request, app_lock: Arc<Mutex<App>>) -> Result<()
                         &[&author, &content, &timestamp_str]
                     );
                 }
+                let messages = get_messages(&app.db_connection, None, 1).unwrap_or_default();
+
+                if let Some(msg) = messages.first() {
+                    html! {
+                        (templates::message(msg))
+                        div #form-feedback hx-swap-oob="true" {}
+                    }
+                } else {
+                    html! {}
+                }
+            } else {
+                templates::rate_limit()
             } 
 
-            let messages = get_messages(&app.db_connection, None, 1).unwrap_or_default();
-
-            if let Some(msg) = messages.first() {
-                templates::message(msg)
-            } else {
-                html! {}
-            }
         }),
         _ => ("Not Found", templates::not_found())
     };
