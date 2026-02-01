@@ -56,7 +56,8 @@
 		});
 	}
 
-	updateTimes();
+	setTimeout(updateTimes, 100);
+	document.addEventListener("htmx:afterSwap", updateTimes)
 	setInterval(updateTimes, 1000);
 })();
 

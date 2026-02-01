@@ -1,6 +1,6 @@
 use std::{fs::{self}, time::Duration};
 
-use chrono::{DateTime, Datelike, Local, Utc};
+use chrono::{DateTime, Utc};
 use maud::{html, Markup, DOCTYPE};
 use rusqlite::{params_from_iter, Connection};
 

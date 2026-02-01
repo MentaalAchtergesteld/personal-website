@@ -7,7 +7,9 @@ use rusqlite::Connection;
 use templates::{get_messages, page};
 use threadpool::ThreadPool;
 use tiny_http::{Header, Method, Request, Response, Server, StatusCode};
+use ui::pages;
 
+mod ui;
 mod threadpool;
 mod ratelimiter;
 mod urldecode;
@@ -134,7 +136,7 @@ fn handle_fragment(mut request: Request, app_lock: Arc<Mutex<App>>) -> Result<()
     let url = request.url().split('?').next().unwrap_or("");
 
     let (title, template) = match (method, url) {
-        (Method::Get, "/" | "/home") => ("Home", templates::home()),
+        (Method::Get, "/" | "/home") => ("Home", pages::home(&app_lock.lock().unwrap())),
         (Method::Get, "/guestbook")  => ("Guestbook", templates::guestbook()),
         (Method::Get, "/projects")   => ("Projects", {
             let app = app_lock.lock().unwrap();
