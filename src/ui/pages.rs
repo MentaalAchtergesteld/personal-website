@@ -1,21 +1,14 @@
 use maud::{html, Markup};
 
-use crate::{App, lastfm, ui::components::{self}};
+use crate::ui::components;
 
-pub fn home(app: &App) -> Markup {
-    let now_playing_data = lastfm::get_now_playing().unwrap_or("Couldn't load current song.".into());
-    let weather_guard = app.weather_cache.read();
-    let weather_data = match &weather_guard {
-        Ok(g) => g.as_str(),
-        Err(_) => "Error loading weather."
-    };
-
+pub fn home() -> Markup {
     html! {
         section.double-border.flex-column.gap8 {
             (components::ascii_banner())
             (components::welcome_message())
         }
-        img.border src="static/img/underconstruction.gif";
+        img.border.flex-grow src="static/img/underconstruction.gif";
         section.double-border.flex-column.gap8 {
             div.flex-row.gap8.align-center.font-small {
                 img src="static/img/rattlesnake.gif";
@@ -24,35 +17,44 @@ pub fn home(app: &App) -> Markup {
             div.flex-row.gap4 {
                 marquee.flex-row.center.border.flex-grow
                     scrollamount="2" behavior="alternate"
-                    { (now_playing_data) }
-                span.center.border { (components::clock()) }
+                    { (components::now_playing(None)) }
+                span.center.border { (components::server_clock()) }
             }
             div.flex-row.gap4 {
-                span.center.border { (weather_data) } 
-                span.center.border.flex-grow { (components::uptime()) }
+                span.center.border { (components::server_weather(None)) } 
+                span.center.border.flex-grow { (components::server_uptime()) }
             }
-            div.flex-row.gap4 {
-                a.center.border.flex-grow href="https://tidal.com/artist/64262665" target="_blank" rel="noopener noreferrer" {
-                    img src="static/img/tidal.svg" alt="HTMX" height="24";
-                }
 
-                a.center.border.flex-grow href="https://x.com/achtergesteld" target="_blank" rel="noopener noreferrer" {
-                    img src="static/img/x.svg" alt="HTMX" height="24";
-                }
-
-                a.center.border.flex-grow href="https://twitch.tv/mentaalachtergesteld" target="_blank" rel="noopener noreferrer" {
-                    img src="static/img/twitch.svg" alt="HTMX" height="24";
-                }
-        
-                a.center.border.flex-grow href="https://github.com/mentaalachtergesteld" target="_blank" rel="noopener noreferrer" {
-                    img src="static/img/github.svg" alt="HTMX" height="24";
-                }
-            }
+            (components::socials())
         }
         section.border.flex-row.justify-center {
             img src="static/img/linuxflipping.gif";
             img src="static/img/gator.gif";
             img src="static/img/yugoflag.gif";
         }
+    } 
+}
+
+pub fn guestbook() -> Markup {
+    html! {
+        h1 { "Guestbook" }
+    }
+}
+
+pub fn projects() -> Markup {
+    html! {
+        h1 { "Projects" }
+    }
+}
+
+pub fn interests() -> Markup {
+    html! {
+        h1 { "Interests" }
+    }
+}
+
+pub fn not_found() -> Markup {
+    html! {
+        h1 { "Page Not Found" }
     }
 }

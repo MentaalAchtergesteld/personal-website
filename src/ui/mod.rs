@@ -1,33 +1,27 @@
 use maud::{DOCTYPE, Markup, html};
 
-use crate::ui::layout::{head, navbar, footer};
-
-mod layout;
 pub mod components;
 pub mod pages;
 
-pub enum RenderType {
-    Partial,
-    Full
-}
+const NAVBAR_ITEMS: [(&str, &str); 4] = [
+    ("/home",      "Home"),
+    ("/guestbook", "Guestbook"),
+    ("/projects",  "Projects"),
+    ("/interests", "Interests"),
+];
 
-pub fn render(title: &str, content: Markup, render_type: RenderType) -> String {
-    match render_type {
-        RenderType::Partial => content.into_string(),
-        RenderType::Full => {
-            html! {
-                (DOCTYPE)
-                html lang="en" {
-                    (head(title))
-                    body.fg-purple.bg-black {
-                        section #main {
-                            (navbar()) 
-                            div #content { (content) }
-                            (footer())
-                         } 
-                    }
-                }
-            }.into_string()
+pub fn render_full(title: &str, content: Markup) -> Markup {
+    html! {
+        (DOCTYPE)
+        html lang="en" {
+            (components::head(title))
+        }
+        body {
+            section.flex-column #main {
+                (components::navbar(&NAVBAR_ITEMS))
+                section.flex-column #content { (content) }
+                (components::footer())
+            }
         }
     }
 }

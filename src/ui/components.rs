@@ -1,37 +1,46 @@
 use std::{fs, time::Duration};
+
+use chrono::Utc;
 use maud::{html, Markup};
-use chrono::{Utc, DateTime};
 
-fn error(msg: &str, error: impl std::fmt::Display) -> Markup {
-    eprintln!("ERROR: {msg}: {error}");
-    html! { span { (msg) } }
+pub fn head(title: &str) -> Markup {
+    html! {
+        title { (title) }
+        script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" {}
+        link rel="stylesheet" href="static/style/styles.css";
+        link rel="icon" type="image/x-icon" href="static/img/favicon.ico";
+    }
 }
 
-// TIME
-
-pub fn clock() -> Markup {
-    let ts_millis = Utc::now().timestamp_millis();
-    html! { span.live-time data-ts=(ts_millis) data-type=("clock") { "⏲ loading..." } }
+pub fn footer() -> Markup {
+    html! {
+        footer.double-border.font-small.flex-row  {
+            p { "Made with " }
+            a href="https://www.htmx.org" target="_blank" rel="noopener noreferrer" {
+                img src="static/img/htmx.svg" alt="HTMX" height="16";
+            }
+            p { " and "}
+            a href="https://rust-lang.org/" target="_blank" rel="noopener noreferrer" {
+                img src="static/img/rust.svg" alt="Rust" height="16";
+            }
+        }
+    }
 }
 
-pub fn uptime() -> Markup {
-    let full_uptime = match fs::read_to_string("/proc/uptime") {
-        Ok(uptime) => uptime,
-        Err(e) => return error("couldn't read uptime", e),
-    };
-
-    let seconds_str = full_uptime.split_whitespace().next().unwrap_or("0");
-    let seconds = seconds_str.parse().unwrap_or(0.0);
-    let duration = Duration::from_secs(seconds as u64);
-    let boot_time = Utc::now() - duration;
-    let ts_millis = boot_time.timestamp_millis();
-
-    html! { span.live-time data-ts=(ts_millis) data-type="uptime" { "⏲ loading..." } }
+fn nav_item(endpoint: &str, name: &str) -> Markup {
+    html! {
+        a .nav-link href=(endpoint) { (name) }
+    }
 }
 
-pub fn smart_time(timestamp: DateTime<Utc>) -> Markup {
-    let ts_millis = timestamp.timestamp_millis();
-    html! { span.live-time data-ts=(ts_millis) data-type="smart" {} }
+pub fn navbar(items: &[(&str, &str)]) -> Markup {
+    html! {
+        section .double-border.flex-row.gap8
+            hx-boost="true"
+            hx-target="#content"
+            hx-push-url="true"
+        { @for item in items { (nav_item(item.0, item.1)) } }
+    }
 }
 
 fn load_text_from_file(path: &str) -> Option<String> {
@@ -63,21 +72,68 @@ pub fn bulletpoints() -> Markup {
     }
 }
 
-pub fn lazy_loaded_span(data: Option<&str>, link: &str, trigger: &str) -> Markup {
-    let text = data.unwrap_or("loading...");
+pub fn socials() -> Markup {
     html! {
-        span
-            hx-get=(link)
-            hx-trigger=(trigger)
-            hx-swap="outerHTML"
-        { (text) }
+        div.flex-row.gap4 {
+            a.center.border.flex-grow href="https://tidal.com/artist/64262665" target="_blank" rel="noopener noreferrer" {
+                img src="static/img/tidal.svg" alt="HTMX" height="24";
+            }
+
+            a.center.border.flex-grow href="https://x.com/achtergesteld" target="_blank" rel="noopener noreferrer" {
+                img src="static/img/x.svg" alt="HTMX" height="24";
+            }
+
+            a.center.border.flex-grow href="https://twitch.tv/mentaalachtergesteld" target="_blank" rel="noopener noreferrer" {
+                img src="static/img/twitch.svg" alt="HTMX" height="24";
+            }
+
+            a.center.border.flex-grow href="https://github.com/mentaalachtergesteld" target="_blank" rel="noopener noreferrer" {
+                img src="static/img/github.svg" alt="HTMX" height="24";
+            }
+        }
     }
 }
 
-pub fn weather(data: Option<&str>) -> Markup {
-    lazy_loaded_span(data, "/comp/weather", "load delay:2m")
+// DATA COMPONENTS
+
+pub fn lazy_loaded_span(data: Option<&str>, endpoint: &str, update_interval: &str) -> Markup {
+    let (trigger, content) = match data {
+        Some(text) => (format!("every {}", update_interval), text),
+        None => ("load".to_string(), "loading...".into())
+    };
+    html! {
+        span.center
+            hx-get=(endpoint)
+            hx-trigger=(trigger)
+            hx-swap="outerHTML"
+        { (content) }
+    }
 }
 
 pub fn now_playing(data: Option<&str>) -> Markup {
-    lazy_loaded_span(data, "/comp/now-playing", "load delay:30s")
+    lazy_loaded_span(data, "/comp/now-playing", "1m")
+}
+
+pub fn server_weather(data: Option<&str>) -> Markup {
+    lazy_loaded_span(data, "/comp/server-weather", "5m")
+}
+
+pub fn server_clock() -> Markup {
+    let ts_millis = Utc::now().timestamp_millis();
+    html! { span.live-time data-ts=(ts_millis) data-type=("clock") { "⏲ loading..." } }
+}
+
+pub fn server_uptime() -> Markup {
+    let full_uptime = match fs::read_to_string("/proc/uptime") {
+        Ok(uptime) => uptime,
+        Err(_) => return html! { span {"Couldn't read uptime" } },
+    };
+
+    let seconds_str = full_uptime.split_whitespace().next().unwrap_or("0");
+    let seconds = seconds_str.parse().unwrap_or(0.0);
+    let duration = Duration::from_secs(seconds as u64);
+    let boot_time = Utc::now() - duration;
+    let ts_millis = boot_time.timestamp_millis();
+
+    html! { span.live-time data-ts=(ts_millis) data-type="uptime" { "⏱ loading..." } }
 }
