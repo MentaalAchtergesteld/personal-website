@@ -47,12 +47,30 @@ pub fn handle_comp(req: Request, app: Arc<Mutex<App>>) -> Result<(), ()> {
     let mut app = app.lock().unwrap();
 
     let content = match (method, url) {
-        (Method::Get, "/comp/now-playing") => components::now_playing(Some(app.lastfm.get_now_playing())),
-        (Method::Get, "/comp/top-artists") => components::top_artists(Some(app.lastfm.get_top_artists(10, "1month"))),
-        (Method::Get, "/comp/top-tracks")  => components::top_tracks(Some(app.lastfm.get_top_tracks(10, "1month"))),
-        (Method::Get, "/comp/top-albums")  => components::top_albums(Some(app.lastfm.get_top_albums(10, "1month"))),
-        (Method::Get, "/comp/user-stats")  => components::lastfm_user_stats(app.lastfm.get_user_stats()),
-        (Method::Get, "/comp/server-weather") => components::server_weather(Some(app.wttr.get_weather())),
+        (Method::Get, "/comp/now-playing") => {
+            let data = app.lastfm_cache.now_playing.get_or_update(|| Some(app.lastfm.get_now_playing()));
+            components::now_playing(data.as_deref())
+        },
+        (Method::Get, "/comp/top-artists") => {
+            let data = app.lastfm_cache.top_artists.get_or_update(|| Some(app.lastfm.get_top_artists(10, "1month")));
+            components::top_artists(data.as_deref())
+        },
+        (Method::Get, "/comp/top-tracks")  => {
+            let data = app.lastfm_cache.top_tracks.get_or_update(|| Some(app.lastfm.get_top_tracks(10, "1month")));
+            components::top_tracks(data.as_deref())
+        }
+        (Method::Get, "/comp/top-albums")  => {
+            let data = app.lastfm_cache.top_albums.get_or_update(|| Some(app.lastfm.get_top_albums(10, "1month")));
+            components::top_albums(data.as_deref())
+        }
+        (Method::Get, "/comp/user-stats")  => {
+            let data = app.lastfm_cache.user_stats.get_or_update(|| app.lastfm.get_user_stats());
+            components::lastfm_user_stats(data.as_deref())
+        }
+        (Method::Get, "/comp/server-weather") => {
+            let data = app.wttr_cache.weather.get_or_update(|| Some(app.wttr.get_weather()));
+            components::server_weather(data.as_deref())
+        }
         _ => return send_response(req, Response::empty(404))
     };
 

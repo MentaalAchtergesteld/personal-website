@@ -1,4 +1,4 @@
-use std::{fmt::format, fs, time::Duration};
+use std::{fs, time::Duration};
 
 use chrono::Utc;
 use maud::{Markup, PreEscaped, html};
@@ -120,7 +120,7 @@ pub fn lazy_component(
     }
 }
 
-pub fn now_playing(data: Option<Option<Track>>) -> Markup {
+pub fn now_playing(data: Option<&Option<Track>>) -> Markup {
     let content = data.map(|track_opt| match track_opt {
         Some(track) => html! { "♫ Now Playing: " (track.name) " by " (track.artist) " ♫" },
         None => html! { "☹ Nothing plaiyng right now ☹" }
@@ -129,7 +129,7 @@ pub fn now_playing(data: Option<Option<Track>>) -> Markup {
     lazy_component(content, "/comp/now-playing", "1m", true)
 }
 
-pub fn top_artists(data: Option<Vec<Artist>>) -> Markup {
+pub fn top_artists(data: Option<&Vec<Artist>>) -> Markup {
     let content = data.map(|ta| html! {
         div.flex-column.gap4 { @for (i, artist) in ta.iter().enumerate() {
             div.list-row {
@@ -142,7 +142,7 @@ pub fn top_artists(data: Option<Vec<Artist>>) -> Markup {
     lazy_component(content, "/comp/top-artists", "", false)
 }
 
-pub fn top_tracks(data: Option<Vec<Track>>) -> Markup {
+pub fn top_tracks(data: Option<&Vec<Track>>) -> Markup {
     let content = data.map(|tt| html! {
         div.flex-column.gap4 { @for (i, track) in tt.iter().enumerate() {
             div.list-row {
@@ -157,7 +157,7 @@ pub fn top_tracks(data: Option<Vec<Track>>) -> Markup {
     lazy_component(content, "/comp/top-tracks", "", false)
 }
 
-pub fn top_albums(data: Option<Vec<Album>>) -> Markup {
+pub fn top_albums(data: Option<&Vec<Album>>) -> Markup {
     let content = data.map(|ta| html! {
         div.flex-column.gap4 { @for (i, album) in ta.iter().enumerate() {
             div.list-row {
@@ -172,7 +172,7 @@ pub fn top_albums(data: Option<Vec<Album>>) -> Markup {
     lazy_component(content, "/comp/top-albums", "", false)
 }
 
-pub fn lastfm_user_stats(data: Option<UserStats>) -> Markup {
+pub fn lastfm_user_stats(data: Option<&UserStats>) -> Markup {
     let content = data.map(|us| html! {
         div.flex-column.gap4 {
             span { "Total scrobbles: " (us.total_scrobbles) }
@@ -224,7 +224,7 @@ pub fn lastfm_stats() -> Markup {
 
 }
 
-pub fn server_weather(data: Option<&str>) -> Markup {
+pub fn server_weather(data: Option<&String>) -> Markup {
     let content = data.map(|t| html! { (t) });
     lazy_component(content, "/comp/server-weather", "5m", true)
 }
