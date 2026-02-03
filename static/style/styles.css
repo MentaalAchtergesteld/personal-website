@@ -98,6 +98,35 @@ span {
 .gap8  { gap: 8px;  }
 .gap16 { gap: 16px; }
 
+.w50 { width: 50%; }
+
 .font-small { font-size: 14px; }
 .font-tiny  { font-size: 12px; }
 .center     { text-align: center; }
+
+.truncate {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	min-width: 0;
+}
+
+.list-row {
+	display: flex;
+	flex-direction: row;
+	gap: 8px;
+	width: 100%;
+	text-align: left;
+	padding: 2px 4px;
+}
+
+.list-row:hover {
+	background-color: var(--fg-color);
+	color: var(--bg-color);
+}
+
+.rank-col {
+	min-width: 24px;
+	text-align: right;
+	flex-shrink: 0;
+}

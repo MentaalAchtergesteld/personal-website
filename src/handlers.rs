@@ -2,7 +2,7 @@ use std::{fs::File, io::Read, path::Path, str::FromStr, sync::{Arc, Mutex}};
 
 use tiny_http::{Header, Method, Request, Response};
 
-use crate::{state::App, ui::{self, pages}};
+use crate::{state::App, ui::{self, components, pages}};
 
 fn send_response<R: Read>(req: Request, res: Response<R>) -> Result<(), ()> {
     req.respond(res)
@@ -40,8 +40,32 @@ fn handle_static(req: Request) -> Result<(), ()> {
     send_response(req, response)
 }
 
+pub fn handle_comp(req: Request, app: Arc<Mutex<App>>) -> Result<(), ()> {
+    let method = req.method();
+    let url = req.url().split("?").next().unwrap_or("");
+
+    let mut app = app.lock().unwrap();
+
+    let content = match (method, url) {
+        (Method::Get, "/comp/now-playing") => components::now_playing(Some(app.lastfm.get_now_playing())),
+        (Method::Get, "/comp/top-artists") => components::top_artists(Some(app.lastfm.get_top_artists(10, "1month"))),
+        (Method::Get, "/comp/top-tracks")  => components::top_tracks(Some(app.lastfm.get_top_tracks(10, "1month"))),
+        (Method::Get, "/comp/top-albums")  => components::top_albums(Some(app.lastfm.get_top_albums(10, "1month"))),
+        (Method::Get, "/comp/user-stats")  => components::lastfm_user_stats(app.lastfm.get_user_stats()),
+        (Method::Get, "/comp/server-weather") => components::server_weather(Some(app.wttr.get_weather())),
+        _ => return send_response(req, Response::empty(404))
+    };
+
+    let body = content.into_string();
+    let response = Response::from_string(body)
+        .with_header(Header::from_str("Content-Type: text/html; charset=utf-8").unwrap());
+
+    send_response(req, response)
+}
+
 pub fn handle_request(req: Request, app: Arc<Mutex<App>>) -> Result<(), ()> {
     if req.url().starts_with("/static") {return handle_static(req)};
+    if req.url().starts_with("/comp")   {return handle_comp(req, app)};
 
     let method = req.method();
     let url = req.url().split("?").next().unwrap_or("");

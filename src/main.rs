@@ -1,9 +1,10 @@
 use std::{env, sync::{Arc, Mutex}};
 
+use chrono::TimeDelta;
 use dotenv::dotenv;
 use tiny_http::Server;
 
-use crate::{state::App, threadpool::ThreadPool};
+use crate::{api::{lastfm::LastfmApi, wttr::WttrApi}, state::App, threadpool::ThreadPool};
 
 mod api;
 mod ui;
@@ -24,7 +25,13 @@ fn main() -> Result<(), ()> {
 
     let pool = ThreadPool::new(16);
 
-    let app = Arc::new(Mutex::new(App {}));
+    let lastfm_key = env::var("LASTFM_KEY")
+        .map_err(|e| eprintln!("ERROR: Couldn't get lastfm key: {e}"))?;
+
+    let app = Arc::new(Mutex::new(App {
+        wttr: WttrApi::new(TimeDelta::minutes(5)),
+        lastfm: LastfmApi::new(lastfm_key, "gravitowl".into())
+    }));
 
     println!("Server listening on address {address}");
 

@@ -49,7 +49,11 @@ pub fn projects() -> Markup {
 
 pub fn interests() -> Markup {
     html! {
-        h1 { "Interests" }
+        img.border.flex-grow src="static/img/underconstruction.gif";
+        section.double-border.flex-column.gap8.justify-center {
+            h1.center { "Last.fm stats" }
+            (components::lastfm_stats())
+        }
     }
 }
 
