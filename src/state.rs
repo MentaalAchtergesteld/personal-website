@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use crate::{api::{lastfm::{Album, Artist, LastfmApi, Track, UserStats}, wttr::WttrApi}, util::cache::Cache};
 
+#[derive(Clone)]
 pub struct LastfmCache {
     pub now_playing: Cache<Option<Track>>,
     pub top_artists: Cache<Vec<Artist>>,
@@ -22,6 +23,7 @@ impl LastfmCache {
     }
 }
 
+#[derive(Clone)]
 pub struct WttrCache {
     pub weather: Cache<String>,
 }

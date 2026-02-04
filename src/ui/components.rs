@@ -123,7 +123,7 @@ pub fn lazy_component(
 pub fn now_playing(data: Option<&Option<Track>>) -> Markup {
     let content = data.map(|track_opt| match track_opt {
         Some(track) => html! { "♫ Now Playing: " (track.name) " by " (track.artist) " ♫" },
-        None => html! { "☹ Nothing plaiyng right now ☹" }
+        None => html! { "☹ Nothing playing right now ☹" }
     });
 
     lazy_component(content, "/comp/now-playing", "1m", true)

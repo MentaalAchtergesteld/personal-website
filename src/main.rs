@@ -1,4 +1,4 @@
-use std::{env, sync::{Arc, Mutex}};
+use std::{env, sync::Arc};
 
 use dotenv::dotenv;
 use tiny_http::Server;
@@ -27,13 +27,13 @@ fn main() -> Result<(), ()> {
     let lastfm_key = env::var("LASTFM_KEY")
         .map_err(|e| eprintln!("ERROR: Couldn't get lastfm key: {e}"))?;
 
-    let app = Arc::new(Mutex::new(App {
-        wttr: WttrApi {},
+    let app = Arc::new(App {
+        wttr: WttrApi::new(),
         lastfm: LastfmApi::new(lastfm_key, "gravitowl".into()),
 
         wttr_cache: WttrCache::new(),
         lastfm_cache: LastfmCache::new()
-    }));
+    });
 
     println!("Server listening on address {address}");
 

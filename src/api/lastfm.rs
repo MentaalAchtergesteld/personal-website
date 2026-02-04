@@ -285,37 +285,6 @@ impl LastfmApi {
     }
 
     pub fn get_user_stats(&self) -> Option<UserStats> {
-        // let results = thread::scope(|s| {
-        //     let t1 = s.spawn(move || {
-        //         let res: Option<RecentTracksRoot> = self.get("user.getRecenttracks", "limit=1");
-        //         res.and_then(|r| r.recenttracks.attr.total.parse::<u64>().ok()).unwrap_or(0)
-        //     });
-        //
-        //     let t2 = s.spawn(move || {
-        //         let res: Option<TopArtistsRoot> = self.get("user.getTopArtists", "limit=1");
-        //         res.and_then(|r| r.topartists.attr.total.parse::<u64>().ok()).unwrap_or(0)
-        //     });
-        //
-        //     let t3 = s.spawn(move || {
-        //         let res: Option<TopAlbumsRoot> = self.get("user.getTopAlbums", "limit=1");
-        //         res.and_then(|r| r.topalbums.attr.total.parse::<u64>().ok()).unwrap_or(0)
-        //     });
-        //
-        //     let t4 = s.spawn(move || {
-        //         let res: Option<TopTracksRoot> = self.get("user.getTopTracks", "limit=1");
-        //         res.and_then(|r| r.toptracks.attr.total.parse::<u64>().ok()).unwrap_or(0)
-        //     });
-        //
-        //     (t1.join(), t2.join(), t3.join(), t4.join())
-        // });
-        //
-        // let (total_scrobbles, total_artists, total_albums, total_tracks) = (
-        //     results.0.unwrap_or(0),
-        //     results.1.unwrap_or(0),
-        //     results.2.unwrap_or(0),
-        //     results.3.unwrap_or(0),
-        // );
-
         let recent: RecentTracksRoot = self.get("user.getRecenttracks", "limit=1")?;
         let total_scrobbles = recent.recenttracks.attr.total.parse().unwrap_or(0);
 

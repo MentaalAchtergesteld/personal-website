@@ -40,11 +40,10 @@ fn handle_static(req: Request) -> Result<(), ()> {
     send_response(req, response)
 }
 
-pub fn handle_comp(req: Request, app: Arc<Mutex<App>>) -> Result<(), ()> {
+pub fn handle_comp(req: Request, app: Arc<App>) -> Result<(), ()> {
     let method = req.method();
     let url = req.url().split("?").next().unwrap_or("");
 
-    let mut app = app.lock().unwrap();
 
     let content = match (method, url) {
         (Method::Get, "/comp/now-playing") => {
@@ -81,7 +80,7 @@ pub fn handle_comp(req: Request, app: Arc<Mutex<App>>) -> Result<(), ()> {
     send_response(req, response)
 }
 
-pub fn handle_request(req: Request, app: Arc<Mutex<App>>) -> Result<(), ()> {
+pub fn handle_request(req: Request, app: Arc<App>) -> Result<(), ()> {
     if req.url().starts_with("/static") {return handle_static(req)};
     if req.url().starts_with("/comp")   {return handle_comp(req, app)};
 

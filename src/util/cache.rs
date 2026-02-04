@@ -11,6 +11,7 @@ impl<T> CacheState<T> {
     }
 }
 
+#[derive(Clone)]
 pub struct Cache<T> {
     state: Arc<RwLock<CacheState<T>>>,
     ttl: Duration,
