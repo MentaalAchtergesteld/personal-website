@@ -130,3 +130,22 @@ span {
 	text-align: right;
 	flex-shrink: 0;
 }
+
+.skeleton-text {
+	background-color: var(--fg-color);
+	opacity: 0.15;
+	color: transparent;
+	animation: pulse 1.5s infinite ease-in-out;
+
+	min-width: 120px;
+}
+.skeleton-text::before {
+    content: '\00a0'; /* Non-breaking space */
+    visibility: hidden;
+}
+
+@keyframes pulse {
+	0%   { opacity: 0.1; }
+	50%  { opacity: 0.25; }
+	100% { opacity: 0.1; }
+}

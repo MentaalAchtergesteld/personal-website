@@ -33,7 +33,7 @@ pub fn footer() -> Markup {
 
 fn nav_item(endpoint: &str, name: &str) -> Markup {
     html! {
-        a .nav-link href=(endpoint) { (name) }
+        a .nav-link href=(endpoint) hx-swap="innerHTML show:window:top" { (name) }
     }
 }
 
@@ -102,21 +102,39 @@ pub fn socials() -> Markup {
 
 pub fn lazy_component(
     content: Option<Markup>,
+    placeholder: Markup,
     endpoint: &str,
     interval: &str,
     is_inline: bool
 ) -> Markup {
     let (trigger, inner_html) = match content {
         Some(html) => (format!("every {interval}"), html),
-        None => ("load".to_string(), html! { "loading..." })
+        None => ("load".to_string(), placeholder)
     };
 
     let tag = if is_inline { "span" } else { "div" };
 
     html! {
-        (PreEscaped(format!("<{} class='center' hx-get='{}' hx-trigger='{}' hx-swap='outerHTML'>", tag, endpoint, trigger)))
+        (PreEscaped(format!("<{} hx-get='{}' hx-trigger='{}' hx-swap='outerHTML'>", tag, endpoint, trigger)))
             (inner_html)
         (PreEscaped(format!("</{}>", tag)))
+    }
+}
+
+fn skeleton_list(text: &str, size: usize) -> Markup {
+    html! {
+        div.flex-column.gap4 { @for i in 0..size {
+            div.list-row {
+                span.rank-col { (i+1) "." }
+                span.flex-grow.truncate.skeleton-text { (text) }
+            }
+        }}
+    }
+}
+
+fn skeleton_span(text: &str) -> Markup {
+    html! {
+        span.skeleton-text { (text) }
     }
 }
 
@@ -126,7 +144,7 @@ pub fn now_playing(data: Option<&Option<Track>>) -> Markup {
         None => html! { "☹ Nothing playing right now ☹" }
     });
 
-    lazy_component(content, "/comp/now-playing", "1m", true)
+    lazy_component(content, skeleton_span("loading current track..."), "/comp/now-playing", "1m", true)
 }
 
 pub fn top_artists(data: Option<&Vec<Artist>>) -> Markup {
@@ -139,7 +157,7 @@ pub fn top_artists(data: Option<&Vec<Artist>>) -> Markup {
         }} 
     });
 
-    lazy_component(content, "/comp/top-artists", "", false)
+    lazy_component(content, skeleton_list("loading artist...", 10), "/comp/top-artists", "", false)
 }
 
 pub fn top_tracks(data: Option<&Vec<Track>>) -> Markup {
@@ -154,7 +172,7 @@ pub fn top_tracks(data: Option<&Vec<Track>>) -> Markup {
         }}
     });
 
-    lazy_component(content, "/comp/top-tracks", "", false)
+    lazy_component(content, skeleton_list("loading track...", 10), "/comp/top-tracks", "", false)
 }
 
 pub fn top_albums(data: Option<&Vec<Album>>) -> Markup {
@@ -169,7 +187,7 @@ pub fn top_albums(data: Option<&Vec<Album>>) -> Markup {
         }}
     });
 
-    lazy_component(content, "/comp/top-albums", "", false)
+    lazy_component(content, skeleton_list("loading album...", 10), "/comp/top-albums", "", false)
 }
 
 pub fn lastfm_user_stats(data: Option<&UserStats>) -> Markup {
@@ -182,7 +200,16 @@ pub fn lastfm_user_stats(data: Option<&UserStats>) -> Markup {
         }
     });
 
-    lazy_component(content, "/comp/user-stats", "", false)
+    let placeholder = html! {
+        div.flex-column.gap4 {
+            (skeleton_span("loading scrobbles"))
+            (skeleton_span("loadint tracks"))
+            (skeleton_span("loading artists"))
+            (skeleton_span("loading albums"))
+        }
+    };
+
+    lazy_component(content, placeholder, "/comp/user-stats", "", false)
 }
 
 pub fn lastfm_stats() -> Markup {
@@ -226,7 +253,7 @@ pub fn lastfm_stats() -> Markup {
 
 pub fn server_weather(data: Option<&String>) -> Markup {
     let content = data.map(|t| html! { (t) });
-    lazy_component(content, "/comp/server-weather", "5m", true)
+    lazy_component(content, skeleton_span("loading weather..."), "/comp/server-weather", "5m", true)
 }
 
 pub fn server_clock() -> Markup {
