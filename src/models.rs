@@ -1,5 +1,6 @@
 use std::{fs, path::Path};
 
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -23,4 +24,12 @@ pub fn load_projects<P: AsRef<Path>>(path: P) -> Result<Vec<Project>, ()> {
         .map_err(|e| eprintln!("ERROR: Couldn't parse projects: {e}"))?;
 
     Ok(data.project)
+}
+
+#[derive(Debug)]
+pub struct Message {
+    pub id: i32,
+    pub author: String,
+    pub content: String,
+    pub timestamp: DateTime<Utc>
 }

@@ -76,7 +76,7 @@ pub fn handle_comp(req: Request, app: Arc<App>) -> Result<(), ()> {
             let start_index = queries.get("last_id")
                 .and_then(|v| v.parse::<usize>().ok())
                 .unwrap_or(0);
-            let limit = queries.get("")
+            let limit = queries.get("limit")
                 .and_then(|v| v.parse::<usize>().ok())
                 .unwrap_or(5);
 
@@ -90,7 +90,28 @@ pub fn handle_comp(req: Request, app: Arc<App>) -> Result<(), ()> {
             };
 
             components::projects_list(projects, next_index)
-        }
+        },
+        (Method::Get, "/comp/messages") => {
+            let queries = parse_query(req.url());
+
+            let start_index = queries.get("last_id")
+                .map(|v| v.parse::<i64>().ok())
+                .unwrap_or(None);
+
+            let limit = queries.get("limit")
+                .and_then(|v| v.parse::<i64>().ok())
+                .unwrap_or(5);
+
+            let messages = app.message_db.lock().unwrap()
+                .read_messages(start_index, limit)
+                .unwrap_or(vec![]);
+
+            let next_index = if messages.len() as i64 == limit {
+                messages.last().map(|msg| msg.id)
+            } else { None };
+
+            components::message_list(&messages, next_index)
+        },
         _ => return send_response(req, Response::empty(404))
     };
 

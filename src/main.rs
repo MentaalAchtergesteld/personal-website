@@ -1,10 +1,11 @@
-use std::{env, sync::Arc};
+use std::{env, sync::{Arc, Mutex}};
 
 use dotenv::dotenv;
 use tiny_http::Server;
 
-use crate::{api::{lastfm::LastfmApi, wttr::WttrApi}, models::load_projects, state::{App, LastfmCache, WttrCache}, threadpool::ThreadPool};
+use crate::{api::{lastfm::LastfmApi, wttr::WttrApi}, db::MessageDb, models::load_projects, state::{App, LastfmCache, WttrCache}, threadpool::ThreadPool};
 
+mod db;
 mod api;
 mod ui;
 mod handlers;
@@ -15,7 +16,6 @@ mod util;
 
 fn main() -> Result<(), ()> {
     dotenv().ok();
-
 
     let address = env::var("SERVER_ADDRESS")
         .map_err(|e| eprintln!("ERROR: Couldn't get server address: {e}"))?;
@@ -32,7 +32,8 @@ fn main() -> Result<(), ()> {
         wttr_cache: WttrCache::new(),
         lastfm_cache: LastfmCache::new(),
 
-        projects: load_projects("static/projects.toml")?
+        projects: load_projects("static/projects.toml")?,
+        message_db: Arc::new(Mutex::new(MessageDb::new("guestbook.db")?)),
     });
 
     println!("Server listening on address {address}");

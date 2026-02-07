@@ -37,7 +37,15 @@ pub fn home() -> Markup {
 
 pub fn guestbook() -> Markup {
     html! {
-        h1 { "Guestbook" }
+        img.border.flex-grow src="static/img/underconstruction.gif";
+        section.double-border.flex-column.gap8.justify-center {
+            (components::input_form())
+            div #message-container
+                hx-get="/comp/messages"
+                hx-trigger="load"
+                hx-swap="innerHTML"
+            { "Loading messages..." }
+        }
     }
 }
 
@@ -45,7 +53,11 @@ pub fn projects() -> Markup {
     html! {
         img.border.flex-grow src="static/img/underconstruction.gif";
         section.double-border.flex-column.gap8.justify-center {
-            (components::projects_list(&[], Some(0))) 
+            div #projects-container
+                hx-get="/comp/projects"
+                hx-trigger="load"
+                hx-swap="innerHTML"
+            { "Loading projects..." }
         }
     }
 }

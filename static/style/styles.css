@@ -47,6 +47,34 @@ span {
 	white-space: nowrap;
 }
 
+button {
+	padding-left: 16px;
+	padding-right: 16px;
+	background-color: var(--fg-color);
+	color: var(--bg-color);
+	font-weight: bold;
+	border: none;
+	cursor: pointer;
+}
+
+button:hover {
+  background-color: var(--fg-color);
+  color: var(--bg-color);
+}
+
+input {
+	background-color: var(--bg-color);
+	color: var(--fg-color);
+}
+
+textarea {
+	resize: vertical;
+	min-height: 1.5em;
+
+	background-color: var(--bg-color);
+	color: var(--fg-color);
+}
+
 #main {
 	width: 100%;
 	max-width: 800px;
@@ -139,13 +167,26 @@ span {
 
 	min-width: 120px;
 }
-.skeleton-text::before {
-    content: '\00a0'; /* Non-breaking space */
-    visibility: hidden;
-}
-
 @keyframes pulse {
 	0%   { opacity: 0.1; }
 	50%  { opacity: 0.25; }
 	100% { opacity: 0.1; }
+}
+
+.collapsed {
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.toggle-btn {
+	margin-top: 8px;
+	font-size: 10px;
+	padding: 2px 6px;
+	background: none;
+	border: 1px solid var(--fg-color);
+	color: var(--fg-color);
 }

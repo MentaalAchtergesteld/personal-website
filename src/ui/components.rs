@@ -1,9 +1,9 @@
 use std::{fs, time::Duration};
 
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use maud::{Markup, PreEscaped, html};
 
-use crate::{api::lastfm::{Album, Artist, Track, UserStats}, models::Project};
+use crate::{api::lastfm::{Album, Artist, Track, UserStats}, models::{Message, Project}};
 
 pub fn head(title: &str) -> Markup {
     html! {
@@ -274,6 +274,11 @@ pub fn server_uptime() -> Markup {
     html! { span.live-time data-ts=(ts_millis) data-type="uptime" { "⏱ loading..." } }
 }
 
+pub fn smart_time(timestamp: DateTime<Utc>) -> Markup {
+    let ts_millis = timestamp.timestamp_millis();
+    html! { span.live-time data-ts=(ts_millis) data-type="smart" {} }
+}
+
 pub fn project_item(project: &Project) -> Markup {
     html! {
         div.border.project.font-small.flex-row {
@@ -308,6 +313,68 @@ pub fn projects_list(projects: &[Project], last_id: Option<usize>) -> Markup {
                 hx-target="#load-more-trigger"
                 hx-swap="outerHTML"
                 { "Loading more projects..." }
+        }
+    }
+}
+
+pub fn message_item(msg: &Message) -> Markup {
+    let is_long = msg.content.chars().count() > 200;
+
+    html! {
+        div.border.message.font-small {
+            div.title.flex-row.space-between {
+                h3 { (msg.author) } 
+                span.font-tiny { (smart_time(msg.timestamp)) }
+            }
+            p.message-content.collapsed[is_long] { (msg.content) }
+            
+            @if is_long { button.toggle-btn { "Show more" } }
+        }
+    }
+}
+
+pub fn message_list(messages: &[Message], last_id: Option<i32>) -> Markup {
+    html! {
+        @for msg in messages {
+            (message_item(msg))
+        }
+
+        @if let Some(last_id) = last_id {
+            span #load-more-trigger
+                hx-get=(format!("/comp/messages?last_id={}", last_id))
+                hx-trigger="revealed"
+                hx-target="#load-more-trigger"
+                hx-swap="outerHTML"
+                { "Loading older messages..." }
+        }
+    }
+}
+
+pub fn input_form() -> Markup {
+    html! {
+        form.flex-column
+            hx-post="/comp/messages"
+            hx-target="#message-list"
+            hx-swap="afterbegin"
+            hx-on::after-request="this.reset()"
+        {
+            div.flex-row {
+                input.border required style="flex-grow: 1;" placeholder="Name" type="text" name="author";
+                button type="submit" { "Post!" }
+            }
+            textarea.border required rows="3" placeholder="Leave a message!" name="content" {}
+            div #form-feedback hx-swap-oob="true" {}
+        }
+    }
+}
+
+pub fn form_feedback(title: &str, desc: &str, is_error: bool) -> Markup {
+    html! {
+        div.border.message.font-small #form-feedback.error[is_error] hx-swap-oob="true" {
+            div.title.flex-row.space-between {
+                h3 { (title) }
+            }
+            p { (desc) }
         }
     }
 }
