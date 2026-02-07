@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::{api::{lastfm::{Album, Artist, LastfmApi, Track, UserStats}, wttr::WttrApi}, util::cache::Cache};
+use crate::{api::{lastfm::{Album, Artist, LastfmApi, Track, UserStats}, wttr::WttrApi}, models::Project, util::cache::Cache};
 
 #[derive(Clone)]
 pub struct LastfmCache {
@@ -40,4 +40,6 @@ pub struct App {
 
     pub wttr_cache: WttrCache,
     pub lastfm_cache: LastfmCache,
+
+    pub projects: Vec<Project>,
 }

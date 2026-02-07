@@ -3,7 +3,7 @@ use std::{fs, time::Duration};
 use chrono::Utc;
 use maud::{Markup, PreEscaped, html};
 
-use crate::api::lastfm::{Album, Artist, Track, UserStats};
+use crate::{api::lastfm::{Album, Artist, Track, UserStats}, models::Project};
 
 pub fn head(title: &str) -> Markup {
     html! {
@@ -97,8 +97,6 @@ pub fn socials() -> Markup {
         }
     }
 }
-
-// DATA COMPONENTS
 
 pub fn lazy_component(
     content: Option<Markup>,
@@ -274,4 +272,42 @@ pub fn server_uptime() -> Markup {
     let ts_millis = boot_time.timestamp_millis();
 
     html! { span.live-time data-ts=(ts_millis) data-type="uptime" { "⏱ loading..." } }
+}
+
+pub fn project_item(project: &Project) -> Markup {
+    html! {
+        div.border.project.font-small.flex-row {
+            div.flex-column.flex-grow.space-between {
+                div {
+                    h3 { (project.title) }
+                    p { (project.description) }
+                } 
+                div {
+                    a.nav-link href=(project.source_url) target="_blank" rel="noopener noreferrer" { "Source" }
+                    @if let Some(deploy_url) = &project.deploy_url {
+                        a.nav-link href=(deploy_url) target="_blank" rel="noopener noreferrer" { "Deployed" }
+                    }
+                }
+            }
+            @if let Some(image_url) = &project.image_url {
+                img style="max-height: 96px;" src=(image_url); 
+            } 
+        }
+    }
+}
+
+pub fn projects_list(projects: &[Project], last_id: Option<usize>) -> Markup {
+    html! {
+        @for p in projects {
+            (project_item(p))
+        }
+        @if let Some(last_id) = last_id {
+            span #load-more-trigger
+                hx-get=(format!("/comp/projects?last_id={}", last_id)) 
+                hx-trigger="revealed"
+                hx-target="#load-more-trigger"
+                hx-swap="outerHTML"
+                { "Loading more projects..." }
+        }
+    }
 }

@@ -3,7 +3,7 @@ use std::{env, sync::Arc};
 use dotenv::dotenv;
 use tiny_http::Server;
 
-use crate::{api::{lastfm::LastfmApi, wttr::WttrApi}, state::{App, LastfmCache, WttrCache}, threadpool::ThreadPool};
+use crate::{api::{lastfm::LastfmApi, wttr::WttrApi}, models::load_projects, state::{App, LastfmCache, WttrCache}, threadpool::ThreadPool};
 
 mod api;
 mod ui;
@@ -22,8 +22,6 @@ fn main() -> Result<(), ()> {
     let server = Server::http(&address)
         .map_err(|e| eprintln!("ERROR: Couldn't start server: {e}"))?;
 
-    let pool = ThreadPool::new(16);
-
     let lastfm_key = env::var("LASTFM_KEY")
         .map_err(|e| eprintln!("ERROR: Couldn't get lastfm key: {e}"))?;
 
@@ -32,10 +30,14 @@ fn main() -> Result<(), ()> {
         lastfm: LastfmApi::new(lastfm_key, "gravitowl".into()),
 
         wttr_cache: WttrCache::new(),
-        lastfm_cache: LastfmCache::new()
+        lastfm_cache: LastfmCache::new(),
+
+        projects: load_projects("static/projects.toml")?
     });
 
     println!("Server listening on address {address}");
+
+    let pool = ThreadPool::new(16);
 
     for request in server.incoming_requests() {
         let app = Arc::clone(&app);

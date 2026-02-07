@@ -43,7 +43,10 @@ pub fn guestbook() -> Markup {
 
 pub fn projects() -> Markup {
     html! {
-        h1 { "Projects" }
+        img.border.flex-grow src="static/img/underconstruction.gif";
+        section.double-border.flex-column.gap8.justify-center {
+            (components::projects_list(&[], Some(0))) 
+        }
     }
 }
 

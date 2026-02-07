@@ -2,7 +2,7 @@ use std::{fs::File, io::Read, path::Path, str::FromStr, sync::{Arc, Mutex}};
 
 use tiny_http::{Header, Method, Request, Response};
 
-use crate::{state::App, ui::{self, components, pages}};
+use crate::{models::Project, state::App, ui::{self, components, pages}, util::parse_query};
 
 fn send_response<R: Read>(req: Request, res: Response<R>) -> Result<(), ()> {
     req.respond(res)
@@ -69,6 +69,27 @@ pub fn handle_comp(req: Request, app: Arc<App>) -> Result<(), ()> {
         (Method::Get, "/comp/server-weather") => {
             let data = app.wttr_cache.weather.get_or_update(|| Some(app.wttr.get_weather()));
             components::server_weather(data.as_deref())
+        }
+        (Method::Get, "/comp/projects") => {
+            let queries = parse_query(req.url());
+
+            let start_index = queries.get("last_id")
+                .and_then(|v| v.parse::<usize>().ok())
+                .unwrap_or(0);
+            let limit = queries.get("")
+                .and_then(|v| v.parse::<usize>().ok())
+                .unwrap_or(5);
+
+            let (projects, next_index) = if start_index >= app.projects.len() {
+                (&[] as &[Project], None)
+            } else {
+                let end = app.projects.len().min(start_index+limit);
+                let slice = &app.projects[start_index..end];
+                let next_index = if end < app.projects.len() { Some(end) } else { None };
+                (slice, next_index)
+            };
+
+            components::projects_list(projects, next_index)
         }
         _ => return send_response(req, Response::empty(404))
     };
