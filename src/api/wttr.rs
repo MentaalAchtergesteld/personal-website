@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 const WTTR_URL: &str = "http://wttr.in/Eindhoven?format=2";
 
 pub struct WttrApi {
@@ -9,9 +7,6 @@ pub struct WttrApi {
 impl WttrApi {
     pub fn new() -> Self {
         let agent = ureq::AgentBuilder::new()
-            .timeout_read(Duration::from_secs(2))
-            .timeout_connect(Duration::from_secs(2))
-            .user_agent("curl/7.68.0")
             .build();
 
         Self { agent }
