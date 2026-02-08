@@ -1,7 +1,6 @@
 #!/usr/bin/bash
 
-PI_USER="pi"
-PI_HOST="raspberrypi.local"
+PI_HOST="pi"
 DIR="~/website"
 
 echo "[1/4] Building container..."
@@ -14,6 +13,6 @@ echo "[3/4] Syncinv .env."
 scp .env $PI_USER@$PI_HOST:$DIR/.env
 
 echo "[4/4] Restarting container..."
-ssh $PI_USER@$PI_HOST "cd $DIR && docker compose up -d --force-recreate app"
+ssh $PI_HOST "cd $DIR && docker compose up -d --force-recreate app"
 
 echo "[-/-] Finished."

@@ -4,7 +4,7 @@ use maud::{Markup, html};
 use tiny_http::{Header, Method, Request, Response};
 use url::form_urlencoded;
 
-use crate::{models::Project, state::App, ui::{self, components, pages}, util::{parse_query, rate_limiter::get_client_ip}};
+use crate::{models::Project, state::App, ui::{self, components, pages::{self, not_found}}, util::{parse_query, rate_limiter::get_client_ip}};
 
 fn send_response<R: Read>(req: Request, res: Response<R>) -> Result<(), ()> {
     req.respond(res)
@@ -150,7 +150,14 @@ pub fn handle_comp(mut req: Request, app: Arc<App>) -> Result<(), ()> {
             components::message_list(&messages, next_index)
         },
         (Method::Post, "/comp/messages") => process_post_message(&mut req, app),
-        _ => return send_response(req, Response::empty(404))
+        _ => {
+
+            let body = not_found().into_string();
+            let response = Response::from_string(body)
+                .with_header(Header::from_str("Content-Type: text/html; charset=utf-8").unwrap())
+                .with_status_code(404);
+            return send_response(req, response)
+        }
     };
 
     let body = content.into_string();
@@ -167,12 +174,12 @@ pub fn handle_request(req: Request, app: Arc<App>) -> Result<(), ()> {
     let method = req.method();
     let url = req.url().split("?").next().unwrap_or("");
 
-    let (title, content) = match (method, url) {
-        (Method::Get, "/" | "/home") => ("Home",      pages::home()),
-        (Method::Get, "/guestbook") =>  ("Guestbook", pages::guestbook()),
-        (Method::Get, "/projects") =>   ("Projects",  pages::projects()),
-        (Method::Get, "/interests") =>  ("Interests", pages::interests()),
-        _ => ("404", pages::not_found())
+    let (title, content, status) = match (method, url) {
+        (Method::Get, "/" | "/home") => ("Home",      pages::home(), 200),
+        (Method::Get, "/guestbook") =>  ("Guestbook", pages::guestbook(), 200),
+        (Method::Get, "/projects") =>   ("Projects",  pages::projects(), 200),
+        (Method::Get, "/interests") =>  ("Interests", pages::interests(), 200),
+        _ => ("Not Found", pages::not_found(), 404),
     };
 
     let is_htmx = req.headers().iter().any(|h| h.field.equiv("HX-Request"));
@@ -184,7 +191,8 @@ pub fn handle_request(req: Request, app: Arc<App>) -> Result<(), ()> {
     };
 
     let response = Response::from_string(body)
-        .with_header(Header::from_str("Content-Type: text/html; charset=utf-8").unwrap());
+        .with_header(Header::from_str("Content-Type: text/html; charset=utf-8").unwrap())
+        .with_status_code(status);
 
     send_response(req, response)
 }

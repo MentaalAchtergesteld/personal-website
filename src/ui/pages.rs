@@ -80,6 +80,9 @@ pub fn interests() -> Markup {
 
 pub fn not_found() -> Markup {
     html! {
-        h1 { "Page Not Found" }
+        section.double-border.flex-column.align-center.gap4 {
+            h1.center { "Not Found" }
+            img src="static/img/dassen.png";
+        }
     }
 }
