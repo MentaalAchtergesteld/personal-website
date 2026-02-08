@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 pub mod cache;
+pub mod rate_limiter;
 
 pub fn parse_query(url: &str) -> HashMap<String, String> {
     let query_str = match url.split_once("?") {
@@ -15,4 +16,3 @@ pub fn parse_query(url: &str) -> HashMap<String, String> {
         })
         .collect()
 }
-

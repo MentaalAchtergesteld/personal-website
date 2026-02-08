@@ -1,6 +1,6 @@
 use std::{sync::{Arc, Mutex}, time::Duration};
 
-use crate::{api::{lastfm::{Album, Artist, LastfmApi, Track, UserStats}, wttr::WttrApi}, db::MessageDb, models::Project, util::cache::Cache};
+use crate::{api::{lastfm::{Album, Artist, LastfmApi, Track, UserStats}, wttr::WttrApi}, db::MessageDb, models::Project, util::{cache::Cache, rate_limiter::RateLimiter}};
 
 #[derive(Clone)]
 pub struct LastfmCache {
@@ -43,4 +43,5 @@ pub struct App {
 
     pub projects: Vec<Project>,
     pub message_db: Arc<Mutex<MessageDb>>,
+    pub rate_limiter: Arc<Mutex<RateLimiter>>,
 }

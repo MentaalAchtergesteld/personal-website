@@ -450,6 +450,7 @@ dependencies = [
  "tiny_http",
  "toml",
  "ureq",
+ "url",
 ]
 
 [[package]]

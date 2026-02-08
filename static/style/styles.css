@@ -50,11 +50,12 @@ span {
 button {
 	padding-left: 16px;
 	padding-right: 16px;
-	background-color: var(--fg-color);
-	color: var(--bg-color);
+	background-color: var(--bg-color);
+	color: var(--fg-color);
 	font-weight: bold;
 	border: none;
 	cursor: pointer;
+	border: 2px solid var(--fg-color);
 }
 
 button:hover {

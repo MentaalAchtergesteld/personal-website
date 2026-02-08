@@ -1,8 +1,10 @@
-use std::{fs::File, io::Read, path::Path, str::FromStr, sync::{Arc, Mutex}};
+use std::{collections::HashMap, fs::File, io::Read, path::Path, str::FromStr, sync::{Arc, Mutex}};
 
+use maud::{Markup, html};
 use tiny_http::{Header, Method, Request, Response};
+use url::form_urlencoded;
 
-use crate::{models::Project, state::App, ui::{self, components, pages}, util::parse_query};
+use crate::{models::Project, state::App, ui::{self, components, pages}, util::{parse_query, rate_limiter::get_client_ip}};
 
 fn send_response<R: Read>(req: Request, res: Response<R>) -> Result<(), ()> {
     req.respond(res)
@@ -40,7 +42,42 @@ fn handle_static(req: Request) -> Result<(), ()> {
     send_response(req, response)
 }
 
-pub fn handle_comp(req: Request, app: Arc<App>) -> Result<(), ()> {
+fn process_post_message(req: &mut Request, app: Arc<App>) -> Markup {
+    let is_allowed = get_client_ip(&req)
+        .map_or(false, |ip| app.rate_limiter.lock().unwrap().is_allowed(ip));
+
+    if !is_allowed {
+        return components::form_feedback("Rate limited", "You're being too fast! Try again in a few seconds.", true);
+    }
+
+    let mut body = String::new();
+    if let Err(e) = req.as_reader().read_to_string(&mut body) {
+        eprintln!("ERROR: Couldn't read body: {e}");
+        return components::form_feedback("Error while posting", "The server could not read the given data.", true)
+    }
+
+    let params: HashMap<String, String> = form_urlencoded::parse(body.as_bytes())
+        .into_owned()
+        .collect();
+
+    let author = params.get("author").map(|s| s.as_str()).unwrap_or("Anonymous");
+    let content = params.get("content").map(|s| s.as_str()).unwrap_or("");
+
+    if content.trim().is_empty() {
+        return components::form_feedback("Content empty", "No content supplied", false);
+    }
+
+    let Ok(msg) = app.message_db.lock().unwrap().create_message(author, content) else {
+        return components::form_feedback("Error while creating message", "The server could not create your message", true);
+    };
+
+    html! {
+        (components::message_item(&msg));
+        (components::empty_form_feedback());
+    }
+}
+
+pub fn handle_comp(mut req: Request, app: Arc<App>) -> Result<(), ()> {
     let method = req.method();
     let url = req.url().split("?").next().unwrap_or("");
 
@@ -112,6 +149,7 @@ pub fn handle_comp(req: Request, app: Arc<App>) -> Result<(), ()> {
 
             components::message_list(&messages, next_index)
         },
+        (Method::Post, "/comp/messages") => process_post_message(&mut req, app),
         _ => return send_response(req, Response::empty(404))
     };
 

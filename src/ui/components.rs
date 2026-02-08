@@ -333,19 +333,38 @@ pub fn message_item(msg: &Message) -> Markup {
     }
 }
 
+pub fn skeleton_message() -> Markup {
+    html! {
+        div.border.message.font-small {
+            div.title.flex-row.space-between {
+                h3.skeleton-text { "Message Title" }
+                span.font-tiny.skeleton-text { "timestamp" }
+            }
+            p.message-content.skeleton-text { "Lorem ipsum dolor sit amet consectetur adipiscing elit. Sit amet consectetur adipiscing elit quisque faucibus ex. Adipiscing elit quisque faucibus ex sapien vitae pellentesque." }
+        }
+    }
+}
+
 pub fn message_list(messages: &[Message], last_id: Option<i32>) -> Markup {
     html! {
-        @for msg in messages {
-            (message_item(msg))
-        }
+        div.flex-column.gap4 #message-list {
+            @for msg in messages {
+                (message_item(msg))
+            }
 
-        @if let Some(last_id) = last_id {
-            span #load-more-trigger
-                hx-get=(format!("/comp/messages?last_id={}", last_id))
-                hx-trigger="revealed"
-                hx-target="#load-more-trigger"
-                hx-swap="outerHTML"
-                { "Loading older messages..." }
+            @if let Some(last_id) = last_id {
+                span #load-more-trigger
+                    hx-get=(format!("/comp/messages?last_id={}", last_id))
+                    hx-trigger="revealed"
+                    hx-target="#load-more-trigger"
+                    hx-swap="outerHTML" {
+                    (skeleton_message())
+                    (skeleton_message())
+                    (skeleton_message())
+                    (skeleton_message())
+                    (skeleton_message())
+                }
+            }
         }
     }
 }
@@ -356,14 +375,14 @@ pub fn input_form() -> Markup {
             hx-post="/comp/messages"
             hx-target="#message-list"
             hx-swap="afterbegin"
-            hx-on::after-request="this.reset()"
+            hx-on::after-swap="this.reset()"
         {
             div.flex-row {
                 input.border required style="flex-grow: 1;" placeholder="Name" type="text" name="author";
                 button type="submit" { "Post!" }
             }
             textarea.border required rows="3" placeholder="Leave a message!" name="content" {}
-            div #form-feedback hx-swap-oob="true" {}
+            div #form-feedback {}
         }
     }
 }
@@ -377,4 +396,8 @@ pub fn form_feedback(title: &str, desc: &str, is_error: bool) -> Markup {
             p { (desc) }
         }
     }
+}
+
+pub fn empty_form_feedback() -> Markup {
+    html! { div #form-feedback hx-swap-oob="true" {} }
 }

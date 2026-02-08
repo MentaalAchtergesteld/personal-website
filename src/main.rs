@@ -1,9 +1,9 @@
-use std::{env, sync::{Arc, Mutex}};
+use std::{env, sync::{Arc, Mutex}, time::Duration};
 
 use dotenv::dotenv;
 use tiny_http::Server;
 
-use crate::{api::{lastfm::LastfmApi, wttr::WttrApi}, db::MessageDb, models::load_projects, state::{App, LastfmCache, WttrCache}, threadpool::ThreadPool};
+use crate::{api::{lastfm::LastfmApi, wttr::WttrApi}, db::MessageDb, models::load_projects, state::{App, LastfmCache, WttrCache}, threadpool::ThreadPool, util::rate_limiter::RateLimiter};
 
 mod db;
 mod api;
@@ -34,6 +34,7 @@ fn main() -> Result<(), ()> {
 
         projects: load_projects("static/projects.toml")?,
         message_db: Arc::new(Mutex::new(MessageDb::new("guestbook.db")?)),
+        rate_limiter: Arc::new(Mutex::new(RateLimiter::new(Duration::from_secs(10)))),
     });
 
     println!("Server listening on address {address}");

@@ -44,7 +44,13 @@ pub fn guestbook() -> Markup {
                 hx-get="/comp/messages"
                 hx-trigger="load"
                 hx-swap="innerHTML"
-            { "Loading messages..." }
+            {
+                (components::skeleton_message())
+                (components::skeleton_message())
+                (components::skeleton_message())
+                (components::skeleton_message())
+                (components::skeleton_message())
+            }
         }
     }
 }
