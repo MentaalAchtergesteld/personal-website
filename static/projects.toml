@@ -46,3 +46,9 @@ description = "A Collatz Conjecture visualizer written in JavaScript, using HTML
 source_url = "https://github.com/MentaalAchtergesteld/collatz-conjecture"
 deploy_url = "https://projects.mentaalachtergesteld.nl/collatz-conjecture/"
 image_url = "/static/img/collatz.png"
+
+[[project]]
+title = "Paint Program"
+description = "Simple paint program written in C with raylib."
+source_url = "https://github.com/MentaalAchtergesteld/paint-program"
+image_url = "/static/img/paint-program.png"
