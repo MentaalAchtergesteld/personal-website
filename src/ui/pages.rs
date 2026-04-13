@@ -27,10 +27,10 @@ pub fn home() -> Markup {
 
             (components::socials())
         }
-        section.border.flex-row.justify-center {
+        section.border.flex-row.justify-center.gap8 {
             img src="static/img/linuxflipping.gif";
             img src="static/img/gator.gif";
-            img src="static/img/yugoflag.gif";
+            img src="static/img/eu.gif";
         }
     } 
 }

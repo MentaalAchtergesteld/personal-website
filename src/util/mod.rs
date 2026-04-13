@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 pub mod cache;
 pub mod rate_limiter;
+pub mod threadpool;
 
 pub fn parse_query(url: &str) -> HashMap<String, String> {
     let query_str = match url.split_once("?") {

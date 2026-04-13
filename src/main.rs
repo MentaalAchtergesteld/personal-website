@@ -3,7 +3,7 @@ use std::{env, sync::{Arc, Mutex}, time::Duration};
 use dotenv::dotenv;
 use tiny_http::Server;
 
-use crate::{api::{lastfm::LastfmApi, wttr::WttrApi}, db::MessageDb, models::load_projects, state::{App, LastfmCache, WttrCache}, threadpool::ThreadPool, util::rate_limiter::RateLimiter};
+use crate::{api::{lastfm::LastfmApi, wttr::WttrApi}, db::MessageDb, models::load_projects, state::{App, LastfmCache, WttrCache},  util::{rate_limiter::RateLimiter, threadpool::ThreadPool}};
 
 mod db;
 mod api;
@@ -11,7 +11,6 @@ mod ui;
 mod handlers;
 mod models;
 mod state;
-mod threadpool;
 mod util;
 
 fn main() -> Result<(), ()> {
