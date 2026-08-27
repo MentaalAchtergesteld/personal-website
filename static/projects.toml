@@ -1,11 +1,4 @@
 [[project]]
-title = "Personal Website"
-description = "This website, made with Rust and HTMX."
-source_url = "https://github.com/MentaalAchtergesteld/personal-website"
-deploy_url = "https://mentaalachtergesteld.nl"
-image_url="/static/img/personal-website.png"
-
-[[project]]
 title = "Mandelbrot Explorer"
 description = "A simple mandelbrot set explorer, lacking infinite zoom."
 source_url = "https://github.com/MentaalAchtergesteld/mandelbrot-explorer"
@@ -13,16 +6,22 @@ deploy_url = "https://projects.mentaalachtergesteld.nl/mandelbrot-explorer"
 image_url="/static/img/mandelbrot.png"
 
 [[project]]
+title = "RISC-V Simulator"
+description = "An incomplete RISC-V simulator written in rust for learning purposes."
+source_url = "https://github.com/MentaalAchtergesteld/riscv-sim"
+
+[[project]]
+title = "Flappy Bird AI"
+description = "A simple Flappy Bird game, played by AI trained with evolution."
+source_url = "https://git.mentaal.eu/mentaal/flappy-ai"
+deploy_url = "https://projects.mentaal.eu/flappy-ai"
+
+[[project]]
 title = "Cellular Automata"
 description = "Cellular Automata implemented using a custom rule syntax, inspired by Tsoding's Cellular Automata project."
 source_url = "https://github.com/MentaalAchtergesteld/cellular-automata"
 deploy_url = "https://projects.mentaalachtergesteld.nl/cellular-automata"
 image_url = "/static/img/cellular-automata.png"
-
-[[project]]
-title = "RISC-V Simulator"
-description = "An incomplete RISC-V simulator written in rust for learning purposes."
-source_url = "https://github.com/MentaalAchtergesteld/riscv-sim"
 
 [[project]]
 title = "CC-SCRIPTS"
@@ -52,3 +51,11 @@ title = "Paint Program"
 description = "Simple paint program written in C with raylib."
 source_url = "https://github.com/MentaalAchtergesteld/paint-program"
 image_url = "/static/img/paint-program.png"
+
+[[project]]
+title = "Personal Website"
+description = "This website, made with Rust and HTMX."
+source_url = "https://github.com/MentaalAchtergesteld/personal-website"
+deploy_url = "https://mentaalachtergesteld.nl"
+image_url="/static/img/personal-website.png"
+
