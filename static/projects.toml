@@ -15,6 +15,7 @@ title = "Flappy Bird AI"
 description = "A simple Flappy Bird game, played by AI trained with evolution."
 source_url = "https://git.mentaal.eu/mentaal/flappy-ai"
 deploy_url = "https://projects.mentaal.eu/flappy-ai"
+image_url = "/static/img/flappy-ai.png"
 
 [[project]]
 title = "Cellular Automata"
