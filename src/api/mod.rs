@@ -1,2 +1,2 @@
-pub mod lastfm;
+pub mod jellyfin;
 pub mod wttr;

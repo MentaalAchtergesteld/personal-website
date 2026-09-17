@@ -1,42 +1,67 @@
-use std::{env, sync::{Arc, Mutex}, time::Duration};
+use std::{
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 
 use dotenv::dotenv;
 use tiny_http::Server;
 
-use crate::{api::{lastfm::LastfmApi, wttr::WttrApi}, db::MessageDb, models::load_projects, state::{App, LastfmCache, WttrCache},  util::{rate_limiter::RateLimiter, threadpool::ThreadPool}};
+use crate::{
+    api::{jellyfin::JellyfinApi, wttr::WttrApi},
+    auth::AdminAuth,
+    config::Config,
+    db::MessageDb,
+    models::load_projects,
+    state::{App, JellyfinCache, WttrCache},
+    util::{rate_limiter::RateLimiter, threadpool::ThreadPool},
+};
 
-mod db;
 mod api;
-mod ui;
+mod auth;
+mod config;
+mod db;
 mod handlers;
 mod models;
 mod state;
+mod ui;
 mod util;
 
 fn main() -> Result<(), ()> {
     dotenv().ok();
 
-    let address = env::var("SERVER_ADDRESS")
-        .map_err(|e| eprintln!("ERROR: Couldn't get server address: {e}"))?;
-    let server = Server::http(&address)
+    let config = Config::from_env().map_err(|e| eprintln!("ERROR: Invalid configuration: {e}"))?;
+
+    let admin_auth = config
+        .admin
+        .map(AdminAuth::new)
+        .transpose()
+        .map_err(|e| eprintln!("ERROR: Invalid admin configuration: {e}"))?;
+    let admin_enabled = admin_auth.is_some();
+
+    let server = Server::http(config.server_address)
         .map_err(|e| eprintln!("ERROR: Couldn't start server: {e}"))?;
 
-    let lastfm_key = env::var("LASTFM_KEY")
-        .map_err(|e| eprintln!("ERROR: Couldn't get lastfm key: {e}"))?;
-
     let app = Arc::new(App {
+        admin_auth,
         wttr: WttrApi::new(),
-        lastfm: LastfmApi::new(lastfm_key, "gravitowl".into()),
+        jellyfin: JellyfinApi::new(
+            config.jellyfin.base_url,
+            config.jellyfin.api_key,
+            config.jellyfin.username,
+            config.jellyfin.user_id,
+        ),
 
         wttr_cache: WttrCache::new(),
-        lastfm_cache: LastfmCache::new(),
+        jellyfin_cache: JellyfinCache::new(),
 
         projects: load_projects("static/projects.toml")?,
-        message_db: Arc::new(Mutex::new(MessageDb::new("guestbook.db")?)),
+        message_db: Arc::new(Mutex::new(MessageDb::new(config.database_path)?)),
         rate_limiter: Arc::new(Mutex::new(RateLimiter::new(Duration::from_secs(10)))),
+        admin_login_rate_limiter: Arc::new(Mutex::new(RateLimiter::new(Duration::from_secs(3)))),
     });
 
-    println!("Server listening on address {address}");
+    println!("Server listening on address {}", config.server_address);
+    println!("Admin mode configured: {admin_enabled}");
 
     let pool = ThreadPool::new(16);
 
@@ -48,5 +73,5 @@ fn main() -> Result<(), ()> {
                 .map_err(|_| eprintln!("ERROR: Couldn't handle request."));
         });
     }
-    Ok(())  
+    Ok(())
 }

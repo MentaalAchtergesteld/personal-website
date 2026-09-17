@@ -1,30 +1,33 @@
-use std::{path::Path};
 use chrono::{DateTime, Utc};
 use rusqlite::{Connection, Row};
+use std::path::Path;
 
 use crate::models::Message;
 
 pub struct MessageDb {
-    connection: Connection
+    connection: Connection,
 }
 
 impl MessageDb {
     pub fn new<P: AsRef<Path>>(path: P) -> Result<Self, ()> {
         let connection = Connection::open(path)
-            .map_err(|e| eprintln!("ERROR: couldn't connect to database: {e}"))?; 
+            .map_err(|e| eprintln!("ERROR: couldn't connect to database: {e}"))?;
 
-        connection.execute("
+        connection
+            .execute(
+                "
             CREATE TABLE IF NOT EXISTS messages (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 author TEXT NOT NULL,
                 content TEXT NOT NULL,
                 timestamp TEXT NOT NULL
             )         
-        ", []).map_err(|e| eprintln!("ERROR: Couldn't create table in database: {e}"))?;
+        ",
+                [],
+            )
+            .map_err(|e| eprintln!("ERROR: Couldn't create table in database: {e}"))?;
 
-        Ok(Self {
-            connection
-        })
+        Ok(Self { connection })
     }
 
     fn parse_message(row: &Row<'_>) -> rusqlite::Result<Message> {
@@ -37,19 +40,33 @@ impl MessageDb {
             id: row.get(0)?,
             author: row.get(1)?,
             content: row.get(2)?,
-            timestamp
+            timestamp,
         })
+    }
+
+    pub fn delete_message(&self, id: i64) -> rusqlite::Result<bool> {
+        let affected = self
+            .connection
+            .execute("DELETE FROM messages WHERE id = ?1", [id])?;
+
+        Ok(affected == 1)
     }
 
     pub fn create_message(&self, author: &str, content: &str) -> Result<Message, ()> {
         let timestamp_str = Utc::now().to_rfc3339();
 
-        let message = self.connection.query_row("
+        let message = self
+            .connection
+            .query_row(
+                "
             INSERT INTO messages (author, content, timestamp)
             VALUES (?1, ?2, ?3)
             RETURNING id, author, content, timestamp
-        ", [author, content, &timestamp_str], Self::parse_message
-        ).map_err(|e| eprintln!("ERROR: Couldn't create message: {e}"))?;
+        ",
+                [author, content, &timestamp_str],
+                Self::parse_message,
+            )
+            .map_err(|e| eprintln!("ERROR: Couldn't create message: {e}"))?;
 
         Ok(message)
     }
@@ -57,18 +74,25 @@ impl MessageDb {
     pub fn read_messages(&self, last_id: Option<i64>, limit: i64) -> Result<Vec<Message>, ()> {
         let cursor = last_id.unwrap_or(i64::MAX);
 
-        let mut stmt = self.connection.prepare("
+        let mut stmt = self
+            .connection
+            .prepare(
+                "
             SELECT id, author, content, timestamp
             FROM messages
             WHERE id < ?1
             ORDER BY id DESC
             LIMIT ?2
-        ").map_err(|e| eprintln!("ERROR: Couldn't prepare read statement: {e}"))?;
+        ",
+            )
+            .map_err(|e| eprintln!("ERROR: Couldn't prepare read statement: {e}"))?;
 
-        let messages_iter = stmt.query_map([cursor, limit], Self::parse_message)
+        let messages_iter = stmt
+            .query_map([cursor, limit], Self::parse_message)
             .map_err(|e| eprintln!("ERROR: Couldn't read messages: {e}"))?;
 
-        messages_iter.collect::<Result<Vec<Message>, _>>()
+        messages_iter
+            .collect::<Result<Vec<Message>, _>>()
             .map_err(|e| eprintln!("ERROR: Couldn't collect messages: {e}"))
     }
 }

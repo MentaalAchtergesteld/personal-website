@@ -21,18 +21,19 @@ pub fn home() -> Markup {
                 span.center.border { (components::server_clock()) }
             }
             div.flex-row.gap4 {
-                span.center.border { (components::server_weather(None)) } 
+                span.center.border { (components::server_weather(None)) }
                 span.center.border.flex-grow { (components::server_uptime()) }
             }
 
             (components::socials())
+            (components::badge_wall())
         }
         section.border.flex-row.justify-center.gap8 {
             img src="static/img/linuxflipping.gif";
             img src="static/img/gator.gif";
             img src="static/img/eu.gif";
         }
-    } 
+    }
 }
 
 pub fn guestbook() -> Markup {
@@ -55,6 +56,36 @@ pub fn guestbook() -> Markup {
     }
 }
 
+pub fn admin(
+    admin_path: &str,
+    is_authenticated: bool,
+    error: Option<&str>,
+    csrf_token: Option<&str>,
+) -> Markup {
+    html! {
+        section.double-border.flex-column.gap8 {
+            h1 { "Admin" }
+
+            @if is_authenticated {
+                form method="post" action=(format!("{admin_path}/logout")) {
+                    input type="hidden" name="csrf_token" value=(csrf_token.unwrap_or(""));
+                    button type="submit" { "Log out" }
+                }
+            } @else {
+                @if let Some(error) = error {
+                    p.error { (error) }
+                }
+
+                form.flex-column.gap8 method="post" action=(format!("{admin_path}/login")) {
+                    input.border required type="password" name="password"
+                        autocomplete="current-password" placeholder="Admin password";
+                    button type="submit" { "Log in" }
+                }
+            }
+        }
+    }
+}
+
 pub fn projects() -> Markup {
     html! {
         img.border.flex-grow src="static/img/underconstruction.gif";
@@ -72,8 +103,8 @@ pub fn interests() -> Markup {
     html! {
         img.border.flex-grow src="static/img/underconstruction.gif";
         section.double-border.flex-column.gap8.justify-center {
-            h1.center { "Last.fm stats" }
-            (components::lastfm_stats())
+            h1.center { "Jellyfin stats" }
+            (components::jellyfin_stats())
         }
     }
 }

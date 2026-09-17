@@ -2,6 +2,7 @@
 name = "personal-website"
 version = "0.1.0"
 edition = "2021"
+default-run = "personal-website"
 
 [dependencies]
 chrono = "0.4.41"
@@ -14,3 +15,6 @@ tiny_http = "0.12.0"
 toml = "0.8.23"
 ureq = { version = "2.9", features = ["json"] }
 url = "2.5.8"
+argon2 = { version = "0.6", features = ["getrandom"] }
+getrandom = "0.4"
+rpassword = "7"

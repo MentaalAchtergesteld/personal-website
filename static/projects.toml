@@ -1,4 +1,11 @@
 [[project]]
+title = "Kamerbot"
+description = "Catch Dutch politicians including all the iconic ones by guessing their name in your discord server!"
+image_url = "/static/img/kamerbot.png"
+source_url = "https://git.mentaal.eu/mentaal/kamerbot"
+deploy_url = "https://discord.com/oauth2/authorize?client_id=1462859838727000195"
+
+[[project]]
 title = "Mandelbrot Explorer"
 description = "A simple mandelbrot set explorer, lacking infinite zoom."
 source_url = "https://github.com/MentaalAchtergesteld/mandelbrot-explorer"
@@ -9,6 +16,11 @@ image_url="/static/img/mandelbrot.png"
 title = "RISC-V Simulator"
 description = "An incomplete RISC-V simulator written in rust for learning purposes."
 source_url = "https://github.com/MentaalAchtergesteld/riscv-sim"
+
+[[project]]
+title = "MentaalTaal"
+description = "A work-in-progress C-like language with a self-hosting compiler, x86-64 code generation, and an LSP."
+source_url = "https://git.mentaal.eu/mentaal/mentaal-lang"
 
 [[project]]
 title = "Flappy Bird AI"
@@ -25,9 +37,31 @@ deploy_url = "https://projects.mentaalachtergesteld.nl/cellular-automata"
 image_url = "/static/img/cellular-automata.png"
 
 [[project]]
+title = "Maze Generator"
+description = "An implementation of Wilson's algorithm to generate a perfect maze, which afterwards gets solved with A*."
+source_url = "https://git.mentaal.eu/mentaal/maze-generator"
+deploy_url = "https://projects.mentaal.eu/maze-gen"
+image_url = "/static/img/maze-gen.png"
+
+[[project]]
 title = "CC-SCRIPTS"
 description = "A collection of scripts and libraies i use with ComputerCraft: Tweaked, including a script manager that allows for installing and updating scripts from within the game."
 source_url = "https://github.com/MentaalAchtergesteld/CC-SCRIPTS"
+
+[[project]]
+title = "cc-get"
+description = "A package manager for ComputerCraft written in Lua, with support for installing and updating programs in-game."
+source_url = "https://git.mentaal.eu/mentaal/cc-get"
+
+[[project]]
+title = "cc-gui"
+description = "A reusable GUI library for ComputerCraft written in Lua, with layout, display, and input components."
+source_url = "https://git.mentaal.eu/mentaal/cc-gui"
+
+[[project]]
+title = "Mentaal Blog"
+description = "A self-hosted blog platform and API written in Go."
+source_url = "https://git.mentaal.eu/mentaal/mentaal-blog"
 
 [[project]]
 title = "Nvim Config"
@@ -59,4 +93,3 @@ description = "This website, made with Rust and HTMX."
 source_url = "https://github.com/MentaalAchtergesteld/personal-website"
 deploy_url = "https://mentaalachtergesteld.nl"
 image_url="/static/img/personal-website.png"
-

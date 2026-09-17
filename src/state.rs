@@ -1,24 +1,30 @@
-use std::{sync::{Arc, Mutex}, time::Duration};
+use std::{
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 
-use crate::{api::{lastfm::{Album, Artist, LastfmApi, Track, UserStats}, wttr::WttrApi}, db::MessageDb, models::Project, util::{cache::Cache, rate_limiter::RateLimiter}};
+use crate::{
+    api::{
+        jellyfin::{JellyfinApi, MusicStats, Track},
+        wttr::WttrApi,
+    },
+    auth::AdminAuth,
+    db::MessageDb,
+    models::Project,
+    util::{cache::Cache, rate_limiter::RateLimiter},
+};
 
 #[derive(Clone)]
-pub struct LastfmCache {
+pub struct JellyfinCache {
     pub now_playing: Cache<Option<Track>>,
-    pub top_artists: Cache<Vec<Artist>>,
-    pub top_tracks: Cache<Vec<Track>>,
-    pub top_albums: Cache<Vec<Album>>,
-    pub user_stats: Cache<UserStats>,
+    pub music_stats: Cache<MusicStats>,
 }
 
-impl LastfmCache {
+impl JellyfinCache {
     pub fn new() -> Self {
         Self {
-            now_playing: Cache::new(Duration::from_mins(1)),
-            top_artists: Cache::new(Duration::from_hours(60)),
-            top_tracks: Cache::new(Duration::from_hours(1)),
-            top_albums: Cache::new(Duration::from_hours(1)),
-            user_stats: Cache::new(Duration::from_mins(5)),
+            now_playing: Cache::new(Duration::from_secs(15)),
+            music_stats: Cache::new(Duration::from_hours(1)),
         }
     }
 }
@@ -30,18 +36,22 @@ pub struct WttrCache {
 
 impl WttrCache {
     pub fn new() -> Self {
-        Self { weather: Cache::new(Duration::from_mins(15)) }
+        Self {
+            weather: Cache::new(Duration::from_mins(15)),
+        }
     }
 }
 
 pub struct App {
+    pub admin_auth: Option<AdminAuth>,
     pub wttr: WttrApi,
-    pub lastfm: LastfmApi,
+    pub jellyfin: JellyfinApi,
 
     pub wttr_cache: WttrCache,
-    pub lastfm_cache: LastfmCache,
+    pub jellyfin_cache: JellyfinCache,
 
     pub projects: Vec<Project>,
     pub message_db: Arc<Mutex<MessageDb>>,
     pub rate_limiter: Arc<Mutex<RateLimiter>>,
+    pub admin_login_rate_limiter: Arc<Mutex<RateLimiter>>,
 }

@@ -1,4 +1,7 @@
-use std::{thread, sync::{Arc, Mutex, mpsc}};
+use std::{
+    sync::{mpsc, Arc, Mutex},
+    thread,
+};
 
 type Job = Box<dyn FnOnce() + Send + 'static>;
 
@@ -18,20 +21,23 @@ impl Worker {
             match msg {
                 Ok(job) => {
                     job();
-                },
+                }
                 Err(_) => {
                     break;
                 }
             }
         });
 
-        Worker { id, thread: Some(thread) }
+        Worker {
+            id,
+            thread: Some(thread),
+        }
     }
 }
 
 pub struct ThreadPool {
     workers: Vec<Worker>,
-    sender: mpsc::Sender<Job>
+    sender: mpsc::Sender<Job>,
 }
 
 impl ThreadPool {
@@ -49,10 +55,13 @@ impl ThreadPool {
     }
 
     pub fn execute<F>(&self, f: F)
-    where F: FnOnce() + Send + 'static
+    where
+        F: FnOnce() + Send + 'static,
     {
         let job = Box::new(f);
-        self.sender.send(job).expect("ThreadPool queue disconnected");
+        self.sender
+            .send(job)
+            .expect("ThreadPool queue disconnected");
     }
 }
 

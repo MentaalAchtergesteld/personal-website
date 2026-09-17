@@ -6,6 +6,23 @@
 	--fg-dim: hsl(260, 85%, 85%);
 	--font-main: "IBM Plex Mono", monospace;
 	--spacing: 8px;
+
+	/* Maze background configuration. Colors are intentionally close to --bg-color. */
+	--maze-wall-color: hsl(0, 0%, 18%);
+	--maze-search-color: hsl(260, 28%, 23%);
+	--maze-path-color: hsl(280, 36%, 30%);
+	--maze-path-cell-color: hsl(280, 46%, 45%);
+	--maze-carver-trail-color: hsl(260, 28%, 23%);
+	--maze-carver-color: hsl(260, 42%, 34%);
+	--maze-finder-color: hsl(280, 68%, 56%);
+	--maze-opacity: 0.72;
+	--maze-cell-size: 24;
+	--maze-frame-ms: 62;
+	--maze-generation-steps: 20;
+	--maze-search-steps: 4;
+	--maze-reveal-steps: 3;
+	--maze-hold-ms: 5000;
+	--maze-fade-step: 0.14;
 }
 
 * {
@@ -29,6 +46,16 @@ body {
 	min-height: 100vh;
 	padding: 16px;
 	overflow-x: hidden;
+}
+
+#maze-background {
+	position: fixed;
+	inset: 0;
+	z-index: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	opacity: var(--maze-opacity);
 }
 
 footer {
@@ -77,12 +104,48 @@ textarea {
 }
 
 #main {
+	position: relative;
+	z-index: 1;
+	background-color: var(--bg-color);
+	box-shadow: 0 0 18px 8px var(--bg-color);
 	width: 100%;
 	max-width: 800px;
 	margin: 0 auto;
 	display: flex;
 	flex-direction: column;
 	min-height: calc(100vh - 32px);
+}
+
+button.maze-toggle {
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--fg-color);
+	font: inherit;
+	font-weight: normal;
+}
+
+#maze-toggle {
+	margin-left: auto;
+}
+
+button.maze-toggle:hover {
+	background: var(--fg-color);
+	color: var(--bg-color);
+}
+
+body.maze-only #main {
+	background: transparent;
+	box-shadow: none;
+}
+
+body.maze-only #content,
+body.maze-only footer {
+	display: none;
+}
+
+body.maze-disabled #maze-background {
+	display: none;
 }
 
 .ascii-banner {
@@ -132,6 +195,16 @@ textarea {
 .font-small { font-size: 14px; }
 .font-tiny  { font-size: 12px; }
 .center     { text-align: center; }
+
+.badge-wall {
+	flex-wrap: wrap;
+	min-height: 31px;
+}
+
+.badge-wall img {
+	flex: none;
+	image-rendering: pixelated;
+}
 
 .truncate {
 	white-space: nowrap;
@@ -183,7 +256,8 @@ textarea {
 	text-overflow: ellipsis;
 }
 
-.toggle-btn {
+.toggle-btn,
+.admin-delete-btn {
 	margin-top: 8px;
 	font-size: 10px;
 	padding: 2px 6px;

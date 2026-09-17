@@ -9,7 +9,7 @@ pub struct Project {
     pub description: String,
     pub source_url: String,
     pub deploy_url: Option<String>,
-    pub image_url: Option<String>
+    pub image_url: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -18,8 +18,8 @@ pub struct ProjectsFile {
 }
 
 pub fn load_projects<P: AsRef<Path>>(path: P) -> Result<Vec<Project>, ()> {
-    let file_content = fs::read_to_string(path)
-        .map_err(|e| eprintln!("ERROR: Couldn't load projects: {e}"))?;
+    let file_content =
+        fs::read_to_string(path).map_err(|e| eprintln!("ERROR: Couldn't load projects: {e}"))?;
     let data: ProjectsFile = toml::from_str(&file_content)
         .map_err(|e| eprintln!("ERROR: Couldn't parse projects: {e}"))?;
 
@@ -28,8 +28,8 @@ pub fn load_projects<P: AsRef<Path>>(path: P) -> Result<Vec<Project>, ()> {
 
 #[derive(Debug)]
 pub struct Message {
-    pub id: i32,
+    pub id: i64,
     pub author: String,
     pub content: String,
-    pub timestamp: DateTime<Utc>
+    pub timestamp: DateTime<Utc>,
 }

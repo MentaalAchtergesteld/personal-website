@@ -1,15 +1,23 @@
-use std::{collections::HashMap, net::IpAddr, time::{Duration, Instant}};
+use std::{
+    collections::HashMap,
+    net::IpAddr,
+    time::{Duration, Instant},
+};
 
 use tiny_http::Request;
 
 pub fn get_client_ip(request: &Request) -> Option<IpAddr> {
-    if let Some(ip) = request.headers().iter()
+    if let Some(ip) = request
+        .headers()
+        .iter()
         .find(|h| h.field.equiv("CF-Connecting-IP"))
-        .and_then(|h| h.value.as_str().parse::<IpAddr>().ok()) 
+        .and_then(|h| h.value.as_str().parse::<IpAddr>().ok())
     {
         return Some(ip);
     }
-    request.headers().iter()
+    request
+        .headers()
+        .iter()
         .find(|h| h.field.equiv("X-Forwarded-For"))
         .and_then(|h| h.value.as_str().split(',').next())
         .and_then(|ip_str| ip_str.trim().parse::<IpAddr>().ok())
@@ -18,14 +26,14 @@ pub fn get_client_ip(request: &Request) -> Option<IpAddr> {
 
 pub struct RateLimiter {
     last_request: HashMap<IpAddr, Instant>,
-    cooldown: Duration
+    cooldown: Duration,
 }
 
 impl RateLimiter {
     pub fn new(cooldown: Duration) -> Self {
         RateLimiter {
             last_request: HashMap::new(),
-            cooldown
+            cooldown,
         }
     }
 

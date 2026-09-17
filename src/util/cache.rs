@@ -1,4 +1,7 @@
-use std::{sync::{Arc, RwLock}, time::{Duration, Instant}};
+use std::{
+    sync::{Arc, RwLock},
+    time::{Duration, Instant},
+};
 
 struct CacheState<T> {
     data: Option<Arc<T>>,
@@ -29,15 +32,20 @@ impl<T: Send + Sync + 'static> Cache<T> {
     }
 
     pub fn get_or_update<F>(&self, fetcher: F) -> Option<Arc<T>>
-    where F: FnOnce() -> Option<T>,
+    where
+        F: FnOnce() -> Option<T>,
     {
         if let Ok(guard) = self.state.read() {
-            if guard.is_valid(self.ttl) { return guard.data.clone() }
+            if guard.is_valid(self.ttl) {
+                return guard.data.clone();
+            }
         }
 
         let mut guard = self.state.write().unwrap();
 
-        if guard.is_valid(self.ttl) { return guard.data.clone() }
+        if guard.is_valid(self.ttl) {
+            return guard.data.clone();
+        }
 
         if let Some(fresh_data) = fetcher() {
             let arc_data = Arc::new(fresh_data);
