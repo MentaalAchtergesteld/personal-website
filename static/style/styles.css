@@ -113,7 +113,6 @@ textarea {
 	margin: 0 auto;
 	display: flex;
 	flex-direction: column;
-	min-height: calc(100vh - 32px);
 }
 
 button.maze-toggle {

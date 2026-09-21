@@ -189,9 +189,9 @@ pub fn now_playing(data: Option<&Option<Track>>) -> Markup {
 }
 
 pub fn top_artists(data: Option<&Vec<Artist>>) -> Markup {
-    let content = data.map(|ta| {
+    let content = data.map(|artists| {
         html! {
-            div.flex-column.gap4 { @for (i, artist) in ta.iter().enumerate() {
+            div.flex-column.gap4 { @for (i, artist) in artists.iter().enumerate() {
                 div.list-row title=(artist.name) {
                     span.rank-col { (i+1) "."}
                     span.truncate title=(artist.name) { (artist.name) }
@@ -233,9 +233,9 @@ pub fn top_tracks(data: Option<&Vec<Track>>) -> Markup {
 }
 
 pub fn top_albums(data: Option<&Vec<Album>>) -> Markup {
-    let content = data.map(|ta| {
+    let content = data.map(|albums| {
         html! {
-            div.flex-column.gap4 { @for (i, album) in ta.iter().enumerate() {
+            div.flex-column.gap4 { @for (i, album) in albums.iter().enumerate() {
                 div.list-row title=(format!("{} - {}", album.name, album.artist)) {
                     span.rank-col { (i+1) "." }
                     span.truncate title=(album.name) { (album.name) }
@@ -259,7 +259,6 @@ pub fn jellyfin_user_stats(data: Option<&UserStats>) -> Markup {
     let content = data.map(|us| {
         html! {
             div.flex-column.gap4 {
-                span { "Total plays: " (us.total_plays) }
                 span { "Library tracks: " (us.library_tracks) }
                 span { "Library artists: " (us.library_artists) }
                 span { "Library albums: " (us.library_albums) }
@@ -269,8 +268,7 @@ pub fn jellyfin_user_stats(data: Option<&UserStats>) -> Markup {
 
     let placeholder = html! {
         div.flex-column.gap4 {
-            (skeleton_span("loading plays"))
-            (skeleton_span("loadint tracks"))
+            (skeleton_span("loading tracks"))
             (skeleton_span("loading artists"))
             (skeleton_span("loading albums"))
         }
@@ -301,7 +299,7 @@ pub fn jellyfin_stats() -> Markup {
             div.flex-column.gap4.w50 {
                 div.align-center.border {
                     div.flex-row.align-center.justify-center.gap4 {
-                        h1 { "User Stats" }
+                        h1 { "Library Stats" }
                     }
                     (jellyfin_user_stats(None))
                 }

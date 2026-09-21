@@ -8,13 +8,12 @@ use std::{
 use serde::{de::DeserializeOwned, Deserialize};
 use url::Url;
 
-const PAGE_SIZE: usize = 500;
+const PAGE_SIZE: usize = 5_000;
 
 #[derive(Debug, Clone)]
 pub struct Track {
     pub name: String,
     pub artist: String,
-    pub playcount: u64,
 }
 
 #[derive(Debug, Clone)]
@@ -31,8 +30,13 @@ pub struct Artist {
 }
 
 #[derive(Debug, Clone)]
+pub struct MusicRankings {
+    pub top_artists: Vec<Artist>,
+    pub top_albums: Vec<Album>,
+}
+
+#[derive(Debug, Clone)]
 pub struct UserStats {
-    pub total_plays: u64,
     pub library_tracks: usize,
     pub library_artists: usize,
     pub library_albums: usize,
@@ -41,8 +45,6 @@ pub struct UserStats {
 #[derive(Debug, Clone)]
 pub struct MusicStats {
     pub top_tracks: Vec<Track>,
-    pub top_artists: Vec<Artist>,
-    pub top_albums: Vec<Album>,
     pub user_stats: UserStats,
 }
 
@@ -233,12 +235,53 @@ impl JellyfinApi {
             Some(Track {
                 name: item.name.unwrap_or_else(|| "Unknown track".to_string()),
                 artist,
-                playcount: item.user_data.map_or(0, |data| data.play_count),
             })
         }))
     }
 
     pub fn get_music_stats(&self) -> Result<MusicStats, JellyfinError> {
+        let user_id = self.get_user_id()?.to_string();
+        let tracks: ItemsResponse = self.get(
+            "/Items",
+            &[
+                ("userId", user_id.clone()),
+                ("recursive", "true".to_string()),
+                ("includeItemTypes", "Audio".to_string()),
+                ("sortBy", "PlayCount".to_string()),
+                ("sortOrder", "Descending".to_string()),
+                ("enableUserData", "false".to_string()),
+                ("enableTotalRecordCount", "true".to_string()),
+                ("enableImages", "false".to_string()),
+                ("limit", "10".to_string()),
+            ],
+        )?;
+
+        let library_artists = self.get_item_count(&user_id, "MusicArtist")?;
+        let library_albums = self.get_item_count(&user_id, "MusicAlbum")?;
+
+        let top_tracks = tracks
+            .items
+            .into_iter()
+            .map(|item| {
+                let artist = display_artist(&item);
+                Track {
+                    name: item.name.unwrap_or_else(|| "Unknown track".to_string()),
+                    artist,
+                }
+            })
+            .collect();
+
+        Ok(MusicStats {
+            top_tracks,
+            user_stats: UserStats {
+                library_tracks: tracks.total_record_count,
+                library_artists,
+                library_albums,
+            },
+        })
+    }
+
+    pub fn get_music_rankings(&self) -> Result<MusicRankings, JellyfinError> {
         let user_id = self.get_user_id()?.to_string();
         let mut start_index = 0;
         let mut items = Vec::new();
@@ -250,48 +293,61 @@ impl JellyfinApi {
                     ("userId", user_id.clone()),
                     ("recursive", "true".to_string()),
                     ("includeItemTypes", "Audio".to_string()),
-                    ("sortBy", "SortName".to_string()),
-                    ("sortOrder", "Ascending".to_string()),
+                    ("sortBy", "PlayCount".to_string()),
+                    ("sortOrder", "Descending".to_string()),
                     ("enableUserData", "true".to_string()),
                     ("enableTotalRecordCount", "true".to_string()),
+                    ("enableImages", "false".to_string()),
                     ("startIndex", start_index.to_string()),
                     ("limit", PAGE_SIZE.to_string()),
                 ],
             )?;
 
             let page_len = page.items.len();
-            items.extend(page.items);
+            let has_unplayed = page
+                .items
+                .iter()
+                .any(|item| item.user_data.as_ref().map_or(0, |data| data.play_count) == 0);
+            items.extend(
+                page.items.into_iter().take_while(|item| {
+                    item.user_data.as_ref().map_or(0, |data| data.play_count) > 0
+                }),
+            );
             start_index += page_len;
 
-            if page_len == 0 || start_index >= page.total_record_count {
+            if has_unplayed || page_len == 0 || start_index >= page.total_record_count {
                 break;
             }
         }
 
-        Ok(aggregate_stats(items))
+        Ok(aggregate_rankings(items))
+    }
+
+    fn get_item_count(&self, user_id: &str, item_type: &str) -> Result<usize, JellyfinError> {
+        let response: ItemsResponse = self.get(
+            "/Items",
+            &[
+                ("userId", user_id.to_string()),
+                ("recursive", "true".to_string()),
+                ("includeItemTypes", item_type.to_string()),
+                ("enableUserData", "false".to_string()),
+                ("enableTotalRecordCount", "true".to_string()),
+                ("enableImages", "false".to_string()),
+                ("limit", "1".to_string()),
+            ],
+        )?;
+
+        Ok(response.total_record_count)
     }
 }
 
-fn aggregate_stats(items: Vec<JellyfinItem>) -> MusicStats {
-    let mut tracks = Vec::with_capacity(items.len());
+fn aggregate_rankings(items: Vec<JellyfinItem>) -> MusicRankings {
     let mut artist_plays: HashMap<String, u64> = HashMap::new();
     let mut album_plays: HashMap<(String, String), u64> = HashMap::new();
-    let mut total_plays = 0_u64;
 
     for item in items {
         let playcount = item.user_data.as_ref().map_or(0, |data| data.play_count);
-        let artist = display_artist(&item);
-        let name = item
-            .name
-            .clone()
-            .unwrap_or_else(|| "Unknown track".to_string());
-
-        tracks.push(Track {
-            name,
-            artist: artist.clone(),
-            playcount,
-        });
-        total_plays = total_plays.saturating_add(playcount);
+        let display_artist = display_artist(&item);
 
         let artists: HashSet<String> = if item.artists.is_empty() {
             item.album_artist.clone().into_iter().collect()
@@ -307,32 +363,25 @@ fn aggregate_stats(items: Vec<JellyfinItem>) -> MusicStats {
             let album_artist = item
                 .album_artist
                 .filter(|artist| !artist.trim().is_empty())
-                .unwrap_or(artist);
-            let key = (album_artist, album);
-            let current = album_plays.get(&key).copied().unwrap_or_default();
-            album_plays.insert(key, current.saturating_add(playcount));
+                .unwrap_or(display_artist);
+            let current = album_plays.entry((album_artist, album)).or_default();
+            *current = current.saturating_add(playcount);
         }
     }
 
-    tracks.sort_by(|left, right| {
-        right
-            .playcount
-            .cmp(&left.playcount)
-            .then_with(|| left.name.cmp(&right.name))
-    });
-
-    let mut artists: Vec<Artist> = artist_plays
+    let mut top_artists: Vec<Artist> = artist_plays
         .into_iter()
         .map(|(name, playcount)| Artist { name, playcount })
         .collect();
-    artists.sort_by(|left, right| {
+    top_artists.sort_by(|left, right| {
         right
             .playcount
             .cmp(&left.playcount)
             .then_with(|| left.name.cmp(&right.name))
     });
+    top_artists.truncate(10);
 
-    let mut albums: Vec<Album> = album_plays
+    let mut top_albums: Vec<Album> = album_plays
         .into_iter()
         .map(|((artist, name), playcount)| Album {
             name,
@@ -340,29 +389,17 @@ fn aggregate_stats(items: Vec<JellyfinItem>) -> MusicStats {
             playcount,
         })
         .collect();
-    albums.sort_by(|left, right| {
+    top_albums.sort_by(|left, right| {
         right
             .playcount
             .cmp(&left.playcount)
             .then_with(|| left.name.cmp(&right.name))
     });
+    top_albums.truncate(10);
 
-    let user_stats = UserStats {
-        total_plays,
-        library_tracks: tracks.len(),
-        library_artists: artists.len(),
-        library_albums: albums.len(),
-    };
-
-    tracks.truncate(10);
-    artists.truncate(10);
-    albums.truncate(10);
-
-    MusicStats {
-        top_tracks: tracks,
-        top_artists: artists,
-        top_albums: albums,
-        user_stats,
+    MusicRankings {
+        top_artists,
+        top_albums,
     }
 }
 

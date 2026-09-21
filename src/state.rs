@@ -5,7 +5,7 @@ use std::{
 
 use crate::{
     api::{
-        jellyfin::{JellyfinApi, MusicStats, Track},
+        jellyfin::{JellyfinApi, MusicRankings, MusicStats, Track},
         wttr::WttrApi,
     },
     auth::AdminAuth,
@@ -18,6 +18,7 @@ use crate::{
 pub struct JellyfinCache {
     pub now_playing: Cache<Option<Track>>,
     pub music_stats: Cache<MusicStats>,
+    pub music_rankings: Cache<MusicRankings>,
 }
 
 impl JellyfinCache {
@@ -25,6 +26,7 @@ impl JellyfinCache {
         Self {
             now_playing: Cache::new(Duration::from_secs(15)),
             music_stats: Cache::new(Duration::from_hours(1)),
+            music_rankings: Cache::new(Duration::from_hours(24 * 7)),
         }
     }
 }

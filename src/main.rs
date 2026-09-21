@@ -65,6 +65,9 @@ fn main() -> Result<(), ()> {
 
     let pool = ThreadPool::new(16);
 
+    let warm_app = Arc::clone(&app);
+    pool.execute(move || handlers::warm_jellyfin_cache(&warm_app));
+
     for request in server.incoming_requests() {
         let app = Arc::clone(&app);
 

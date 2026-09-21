@@ -316,6 +316,20 @@ fn get_cached_music_stats(app: &App) -> Option<Arc<crate::api::jellyfin::MusicSt
     })
 }
 
+fn get_cached_music_rankings(app: &App) -> Option<Arc<crate::api::jellyfin::MusicRankings>> {
+    app.jellyfin_cache.music_rankings.get_or_update(|| {
+        app.jellyfin
+            .get_music_rankings()
+            .map_err(|error| eprintln!("ERROR: Couldn't get Jellyfin music rankings: {error}"))
+            .ok()
+    })
+}
+
+pub(crate) fn warm_jellyfin_cache(app: &App) {
+    let _ = get_cached_music_stats(app);
+    let _ = get_cached_music_rankings(app);
+}
+
 pub fn handle_comp(mut req: Request, app: Arc<App>) -> Result<(), ()> {
     let path = req.url().split("?").next().unwrap_or("").to_string();
 
@@ -355,7 +369,7 @@ pub fn handle_comp(mut req: Request, app: Arc<App>) -> Result<(), ()> {
             }
         }
         (Method::Get, "/comp/top-artists") => {
-            let data = get_cached_music_stats(&app);
+            let data = get_cached_music_rankings(&app);
             match data {
                 Some(data) => components::top_artists(Some(&data.top_artists)),
                 None => components::api_error(
@@ -377,7 +391,7 @@ pub fn handle_comp(mut req: Request, app: Arc<App>) -> Result<(), ()> {
             }
         }
         (Method::Get, "/comp/top-albums") => {
-            let data = get_cached_music_stats(&app);
+            let data = get_cached_music_rankings(&app);
             match data {
                 Some(data) => components::top_albums(Some(&data.top_albums)),
                 None => components::api_error(
