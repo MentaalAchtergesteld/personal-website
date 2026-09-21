@@ -1,4 +1,9 @@
 [[project]]
+title = "MentaalMetaal"
+description = "A custom 64-bit CPU architecture with an assembler, linker, and emulator written in C."
+source_url = "https://git.mentaal.eu/mentaal/mentaalmetaal"
+
+[[project]]
 title = "Kamerbot"
 description = "Catch Dutch politicians including all the iconic ones by guessing their name in your discord server!"
 image_url = "/static/img/kamerbot.png"
